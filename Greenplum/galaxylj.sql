@@ -509,39 +509,13 @@ CREATE TABLE GalaxyLJ(
 	TAI_i float NOT NULL,
 	TAI_z float NOT NULL
 )
--- ÆÕÍ¨±í
--- appendonly±í
+-- æ™®é€šè¡¨
+-- appendonlyè¡¨
 -- with (appendonly=TRUE)
--- Ñ¹Ëõ±í
+-- åŽ‹ç¼©è¡¨
 -- with (appendonly=TRUE,compresslevel=5)
--- ÁÐ´æ´¢±í
+-- åˆ—å­˜å‚¨è¡¨
 -- with (appendonly=TRUE,orientation=COLUMN)
--- ÁÐ´æ´¢Ñ¹Ëõ±í
+-- åˆ—å­˜å‚¨åŽ‹ç¼©è¡¨
 -- with (appendonly=TRUE,orientation=COLUMN,compresslevel=5)
 distributed by (objID);
-
-
--- É¾³ý±í
-drop table galaxy;
-
--- µ¼Èë±í
-copy "public".galaxy from '/home/gpadmin/load/comma/galaxyLJ1000.csv' with DELIMITER ',' csv header;
--- linux shell comma
-/usr/bin/time -v -o runGal.txt psql -d astronomy -c "copy GalaxyLJ from '/home/gpadmin/load/comma/GalaxyLJ1000.csv' with DELIMITER ',' csv header;" 
--- linux shell tab
-/usr/bin/time -v -o runGal.txt psql -d astronomy -c "copy GalaxyLJ from '/home/gpadmin/load/tab/10G/GalaxyLJ1000.csv' with DELIMITER '\t';" 
-
--- µ¥±í²éÑ¯
-explain analyze SELECT objID, cModelMag_g FROm GalaxyLJ WHERE cModelMag_g between 18 and 19;
-explain analyze SELECT objID FROM GalaxyLJ WHERE r < 22 and extinction_r > 0.175;
-explain analyze SELECT colc_g, colc_r FROM GalaxyLJ WHERE (-0.642788*cx +0.766044 * cy>=0) and (-0.984808 * cx - 0.173648 * cy <0);
-explain analyze ?SELECT g,run,rerun,camcol,field,objID FROM GalaxyLJ WHERE ( (g <= 22) and (u - g >= -0.27) and (u - g < 0.71) and (g - r >= -0.24) and (g - r < 0.35) and (r - i >= -0.27) and (r - i < 0.57) and (i - z >= -0.35) and (i - z < 0.70) );
--- Q12Á½±í²éÑ¯ galaxylj/neighbors
-explain analyze SELECT COUNT(*) FROM GalaxyLJ AS g1 JOIN neighbors AS N ON g1.objID = N.objID JOIN GalaxyLJ AS g2 ON g2.objID = N.NeighborObjID 
-WHERE
-g1.objID < g2.objID and N.neighborType = 3 and g1.petroRad_u > 0 and g2.petroRad_u > 0 and g1.petroRad_g > 0 and g2.petroRad_g > 0 and g1.petroRad_r > 0 and
-g2.petroRad_r > 0 and g1.petroRad_i > 0 and g2.petroRad_i > 0 and g1.petroRad_z > 0 and g2.petroRad_z > 0 and g1.petroRadErr_g > 0 and g2.petroRadErr_g > 0 and
-g1.petroMag_g>=16 and g1.petroMag_g<=21 and g2.petroMag_g>=16 and g2.petroMag_g<=21 and g1.modelMag_u > -9999 and g1.modelMag_g > -9999 and
-g1.modelMag_r > -9999 and g1.modelMag_i > -9999 and g1.modelMag_z > -9999 and g2.modelMag_u > -9999 and g2.modelMag_g > -9999 and g2.modelMag_r > -9999 and
-g2.modelMag_i > -9999 and g2.modelMag_z > -9999 and (g1.modelMag_g - g2.modelMag_g > 3 or g1.modelMag_g - g2.modelMag_g < -3) and
-(g1.petroR50_r>=0.25*g2.petroR50_r AND g1.petroR50_r<=4.0*g2.petroR50_r) and (g2.petroR50_r>=0.25*g1.petroR50_r AND g2.petroR50_r<=4.0*g1.petroR50_r) and (N.distance <= (g1.petroR50_r + g2.petroR50_r));
