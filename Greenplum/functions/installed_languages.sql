@@ -5,3 +5,5 @@ begin
 	return query select * from pg_language;
 end;
 $$ language plpgsql;
+
+-- select * from installed_languages();
