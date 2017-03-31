@@ -1,3 +1,5 @@
+-- 基于视图的函数
+
 create view running_queries as
 select 
 	current_timestamp - query_start as runtime,
