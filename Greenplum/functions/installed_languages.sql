@@ -1,3 +1,5 @@
+-- 返回集合的函数
+
 create or replace function installed_languages()
 	returns setof pg_language
 as $$
