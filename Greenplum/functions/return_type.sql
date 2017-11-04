@@ -84,7 +84,7 @@ as $$
 		yield i,i+1
 $$ language plpythonu;
 
---
+-- 3.对于集合中的任意一行，可以返回不同类型
 create or replace function birthdates(out name text,out birthdate date)
 	returns setof record
 as $$
