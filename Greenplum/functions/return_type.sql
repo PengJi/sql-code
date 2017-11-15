@@ -19,7 +19,8 @@ as $$
 	
 	u = plpy.execute("""select username,usesysid,usesuper
 			from pg_user
-			where username = '%s'""" % username)[0];
+			where username = '%s'""" % username)[0]; 
+	--后面的[0]是为了提取结果中的第一行，因为plpy.execute会返回一张结果列表
 
 	user = PGUser(u['username'],u['usersysid'],u['usesuper'])
 	return user
@@ -40,3 +41,15 @@ as $$
 $$ language plpythonu;
 
 -- 使用三元组
+create or replace function userinfo(
+	inout username name,
+	out user_id oid,
+	out is_superuser boolean)
+as $$
+	u = plpy.execute("""
+		select usename,usesysid,usesuper
+		from pg_user
+		where usename = '%s'""" % username)[0]
+
+	return (u['usename'],u['usesysid'],u['usesuper'])
+$$ language plpythonu;
