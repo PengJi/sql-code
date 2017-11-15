@@ -53,3 +53,5 @@ as $$
 
 	return (u['usename'],u['usesysid'],u['usesuper'])
 $$ language plpythonu;
+
+-- 调用 select * from useinf('postgres');
