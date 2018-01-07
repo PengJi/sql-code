@@ -3,6 +3,8 @@
 #include "funcapi.h"
 #include "utils/array.h"
 
+PG_MODULE_MAGIC;
+
 /**
  * 多态参数和返回类型
  * http://www.postgres.cn/docs/9.4/xfunc-c.html

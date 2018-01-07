@@ -2,6 +2,8 @@
 #include "executor/executor.h"  /* for GetAttributeByName() */
 #include "funcapi.h"
 
+PG_MODULE_MAGIC;
+
 /**
  * 返回集合
  * http://www.postgres.cn/docs/9.4/xfunc-c.html
@@ -96,18 +98,22 @@ retcomposite(PG_FUNCTION_ARGS)
 }
 
 /*
+ *
+ * cc -fpic -c 35.9.9.c -I/home/gpdba/greenplum/include/postgresql/server;
+ * cc -shared -o 35.9.9.so 35.9.9.o;
+ *
 申明函数
 CREATE TYPE __retcomposite AS (f1 integer, f2 integer, f3 integer);
 
 CREATE OR REPLACE FUNCTION retcomposite(integer, integer)
     RETURNS SETOF __retcomposite
-    AS 'filename', 'retcomposite'
+    AS '/home/gpdba/sql_prac/Greenplum/functions/c/35.9.9', 'retcomposite'
     LANGUAGE C IMMUTABLE STRICT;
 
 另一种方法
 CREATE OR REPLACE FUNCTION retcomposite(IN integer, IN integer,
     OUT f1 integer, OUT f2 integer, OUT f3 integer)
     RETURNS SETOF record
-    AS 'filename', 'retcomposite'
+    AS '/home/gpdba/sql_prac/Greenplum/functions/c/35.9.9', 'retcomposite'
     LANGUAGE C IMMUTABLE STRICT;
 */
