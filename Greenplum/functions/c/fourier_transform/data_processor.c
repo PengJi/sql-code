@@ -38,7 +38,7 @@ static float get_peak_frequence(const kiss_fft_cpx *cout, int nfft, float start_
 	return get_peak_pos(cout, nfft, start_pos) * sample_hz / nfft;
 }
 
-
+//初始化
 data_processor_t data_processor_init(int nfft, int hz) {
 	data_processor_t dfft = NULL;
 

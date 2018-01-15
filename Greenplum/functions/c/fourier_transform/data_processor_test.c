@@ -27,7 +27,9 @@ static int read_data(const char *filename, kiss_fft_cpx *cin, int n) {
 		cin[i++].r = atoi(p + 4);
 		if (i >= n)
 			break;
-		//printf("i=%d, %s, (%f)", i, p+4, in[i-1]);
+		//printf("i=%d, %s, (%f)\n", i, p+4, cin[i-1].r);
+		//读取的复数
+		printf("i=%d, %f+(%f)i\n", i, cin[i-1].r,cin[i-1].i);
 	}
 	while (i < n) {
 		cin[i].i = 0;
