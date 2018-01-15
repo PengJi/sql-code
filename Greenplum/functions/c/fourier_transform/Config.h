@@ -1,11 +1,6 @@
 /*
- * FileName : Config.h
- * Author   : xiahouzuoxin
- * Date     : 2013.08.31
- * Version  : v1.0
- * Brief    : place global typedefs and macros here
+ * 类型定义和宏定义
  */
-
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
@@ -39,7 +34,6 @@ typedef unsigned char                     uint8_t;
 typedef long                              int40_t;
 typedef int                               int32_t;
 typedef short                             int16_t;
-//typedef char                              int8_t;
 
 typedef float                             fp32_t;
 typedef double                            fp64_t;
@@ -50,7 +44,7 @@ typedef double                            fp64_t;
 typedef long long                         int64_t;
 
 typedef struct {
-    float real;
+  float real;
 	float imag;
 } COMPLEX;
 

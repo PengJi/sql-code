@@ -1,12 +1,5 @@
-/*
- * FileName : zx_math.c
- * Author   : xiahouzuoxin
- * Date     : 2013.12.23
- * Version  : v1.0
- * Brief    :  
- */
-#ifndef _ZX_MATH_H
-#define _ZX_MATH_H
+#ifndef _MATH_UTILS
+#define _MATH_UTILS
 
 #ifdef __cplusplus
   extern "C" {

@@ -1,12 +1,3 @@
-/*
- * FileName : main.c
- * Author   : xiahouzuoxin @163.com
- * Version  : v1.0
- * Date     : 2014/4/9 22:27:55
- * Brief    : 
- * 
- * Copyright (C) MICL,USTB
- */
 #include "fft.h" 
 
 #define  SAMPLE_NODES              (128)  

@@ -1,10 +1,3 @@
-/*
- * FileName : zx_math.c
- * Author   : xiahouzuoxin
- * Date     : 2013.12.23
- * Version  : v1.0
- * Brief    :  
- */
 #include "fft_utils.h"
 #include <limits.h>
 
@@ -62,14 +55,8 @@ void scale(TYPE_SCALE x[],
 	}
 }
 
-
-
 /*
  * COMP_abs
- * @brief 
- * @input params
- * @output params
- * @retval
  */
 float comp_abs(COMPLEX x)
 {
@@ -81,13 +68,8 @@ float comp_abs(COMPLEX x)
     return mag;
 }
 
-
 /*
- * @brief   计算二进制表示中1出现的个数的快速算法.
- *          有c个1，则循环c次
- * @inputs  
- * @outputs 
- * @retval  
+ * 计算二进制表示中1出现的个数的快速算法。有c个1，则循环c次
  */
 int ones_32(uint32_t n)
 {
@@ -99,13 +81,9 @@ int ones_32(uint32_t n)
     return c ;
 }
 
-/*
- * @brief   
+/*  
  *   floor{long2(x)}
- *   x must > 0
- * @inputs  
- * @outputs 
- * @retval  
+ *   x must > 0 
  */
 uint32_t floor_log2_32(uint32_t x)
 {
