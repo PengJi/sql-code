@@ -39,6 +39,7 @@ static float get_peak_frequence(const kiss_fft_cpx *cout, int nfft, float start_
 }
 
 //初始化
+//2048, 214000
 data_processor_t data_processor_init(int nfft, int hz) {
 	data_processor_t dfft = NULL;
 
@@ -54,6 +55,7 @@ data_processor_t data_processor_init(int nfft, int hz) {
 
 	dfft->sample_hz = hz;
 	dfft->nfft = nfft;
+	//分配输入数据空间
 	dfft->cin = (kiss_fft_cpx *)malloc(sizeof(kiss_fft_cpx) * dfft->nfft);
 	if (!dfft->cin) {
 		perror("malloc cin");
@@ -63,6 +65,7 @@ data_processor_t data_processor_init(int nfft, int hz) {
 
 	printf("dfft->cin len = %d\n",sizeof(kiss_fft_cpx) * dfft->nfft);
 
+	//分配输出数据空间
 	dfft->cout = (kiss_fft_cpx *)malloc(sizeof(kiss_fft_cpx) * dfft->nfft);
 	if (!dfft->cout) {
 		perror("malloc cout");
