@@ -8,6 +8,7 @@ PG_MODULE_MAGIC;
 #define  SAMPLE_NODES              (128)  
 COMPLEX x[SAMPLE_NODES];  
 
+//产生输入数据
 static void MakeInput()  
 {  
     int i;  
@@ -18,6 +19,7 @@ static void MakeInput()
         x[i].imag  = 0.0f;  
     }  
 }  
+//PG_GETARG_FLOAT8(n)
 
 PG_FUNCTION_INFO_V1(fft_main);
  
@@ -28,20 +30,18 @@ fft_main(PG_FUNCTION_ARGS)
 
     /* TEST FFT */
     MakeInput();  
-    fft(x,SAMPLE_NODES);  
 
+    fft(x,SAMPLE_NODES);  
     for (i=0; i<SAMPLE_NODES; i++) {
-        //printf("%.5f %.5f\n", x[i].real, x[i].imag);
 		ereport(INFO,
             (errcode(ERRCODE_UNDEFINED_OBJECT),
             errmsg("%.5f %.5f\n",x[i].real, x[i].imag)));
     }
   
-	printf("=======================\n");
+	//printf("=======================\n");
 
-    ifft(x,SAMPLE_NODES);  
+    ifft(x,SAMPLE_NODES);
     for (i=0; i<SAMPLE_NODES; i++) {
-        //printf("%.5f %.5f\n", x[i].real, x[i].imag);
         ereport(INFO,
             (errcode(ERRCODE_UNDEFINED_OBJECT),
             errmsg("%.5f %.5f\n", x[i].real, x[i].imag)));
