@@ -61,8 +61,6 @@ void fft_filend(FILE * fin,FILE * fout,int *dims,int ndims,int isinverse)
     free (buf);
 }
 
-
-
 static
 void fft_filend_real(FILE * fin,FILE * fout,int *dims,int ndims,int isinverse)
 {

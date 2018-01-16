@@ -5,7 +5,7 @@
 PG_MODULE_MAGIC;
 
 /**
- * 返回集合
+ * 返回集合(多行)
  * http://www.postgres.cn/docs/9.4/xfunc-c.html
  */
 
@@ -67,7 +67,6 @@ retcomposite(PG_FUNCTION_ARGS)
          * 准备一个数值数组用于版本的返回行
          * 它应该是一个C字符串数组，稍后可以被合适的类型输入函数处理。
          */
-
         values = (char **) palloc(3 * sizeof(char *));
         values[0] = (char *) palloc(16 * sizeof(char));
         values[1] = (char *) palloc(16 * sizeof(char));
@@ -98,10 +97,9 @@ retcomposite(PG_FUNCTION_ARGS)
 }
 
 /*
- *
- * cc -fpic -c 35.9.9.c -I/home/gpdba/greenplum/include/postgresql/server;
- * cc -shared -o 35.9.9.so 35.9.9.o;
- *
+cc -fpic -c 35.9.9.c -I/home/gpdba/greenplum/include/postgresql/server;
+cc -shared -o 35.9.9.so 35.9.9.o;
+
 申明函数
 CREATE TYPE __retcomposite AS (f1 integer, f2 integer, f3 integer);
 

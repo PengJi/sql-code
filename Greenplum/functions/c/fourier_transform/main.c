@@ -13,13 +13,12 @@ static void MakeInput()
 {  
     int i;  
   
-    for ( i=0;i<SAMPLE_NODES;i++ )  
+    for (i=0;i<SAMPLE_NODES;i++)  
     {  
         x[i].real = sin(PI*8*i/SAMPLE_NODES);  
         x[i].imag  = 0.0f;  
     }  
-}  
-//PG_GETARG_FLOAT8(n)
+}
 
 PG_FUNCTION_INFO_V1(fft_main);
  
@@ -27,8 +26,9 @@ Datum
 fft_main(PG_FUNCTION_ARGS)  
 {  
     int i = 0;
+    float8 real = PG_GETARG_FLOAT8(0);
+    float8 imag = PG_GETARG_FLOAT8(1);
 
-    /* TEST FFT */
     MakeInput();  
 
     fft(x,SAMPLE_NODES);  
@@ -47,7 +47,6 @@ fft_main(PG_FUNCTION_ARGS)
             errmsg("%.5f %.5f\n", x[i].real, x[i].imag)));
     }
 	
-
     /* TEST FFT with REAL INPUTS */
 	/*
     MakeInput();  
@@ -86,7 +85,6 @@ int main(void)
         printf("%.5f %.5f\n", x[i].real, x[i].imag);
     }
 	
-
     /* TEST FFT with REAL INPUTS */
 	/*
     MakeInput();  
