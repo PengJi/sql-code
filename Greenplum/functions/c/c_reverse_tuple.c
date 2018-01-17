@@ -5,7 +5,7 @@
 
 /*
  * 返回复杂类型的单个元组
- *
+ * 《PostgreSQL服务器编程》
  */
 Datum
 c_reverse_tuple(PG_FUNCTION_ARGS){

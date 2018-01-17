@@ -79,7 +79,7 @@ retcomposite(PG_FUNCTION_ARGS)
         /* 制作一个行 */
         tuple = BuildTupleFromCStrings(attinmeta, values);
 
-        /* 把行做成 datum  */
+        /* 把行做成 datum */
         result = HeapTupleGetDatum(tuple);
 
         /* 清理(这些实际上并非必要) */
