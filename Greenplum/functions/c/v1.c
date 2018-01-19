@@ -4,8 +4,8 @@
 #include "utils/geo_decls.h"
 
 /*
- * http://www.postgres.cn/docs/9.4/xfunc-c.html
  * 版本1调用约定
+ * http://www.postgres.cn/docs/9.4/xfunc-c.html
  */
 
 #ifdef PG_MODULE_MAGIC

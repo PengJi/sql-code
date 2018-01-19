@@ -5,6 +5,7 @@
 #include "catalog/heap.h"
 #include "access/heapam.h"
 #include "access/relscan.h"
+#include "utils/tqual.h"
 
 PG_MODULE_MAGIC;
 
@@ -40,11 +41,11 @@ fft_main(PG_FUNCTION_ARGS)
     Oid relid = PG_GETARG_OID(0);
     reltb = heap_open(relid, AccessShareLock);
     scantb = heap_beginscan(reltb, SnapshotNow, 0, NULL);
-    while ((tupletb = heap_getnext(scantb, ForwardScanDirection)) != NULL){
+	while ((tupletb = heap_getnext(scantb, ForwardScanDirection)) != NULL){
         thtb = tupletb->t_data;
         real = DatumGetFloat8(GetAttributeByName(thtb,"n1",&aisnull));
         imag = DatumGetFloat8(GetAttributeByName(thtb,"n2",&aisnull));
-        ereport(INFO,(errmsg("%.5f %.5f\n",real, imag)));
+        ereport(INFO,(errmsg("read tuple: %.5f %.5f\n",real, imag)));
     }
 
     heap_endscan(scantb);
