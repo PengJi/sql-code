@@ -30,9 +30,9 @@ c_overpaid(PG_FUNCTION_ARGS)
 }
 
 /**
- * GetAttributeByName 是 PostgreSQL系统函数，用来返回当前记录的字段。
+ * GetAttributeByName 是 PostgreSQL 系统函数，用来返回当前记录的字段。
  * 它有三个参数：
- * 类型为HeapTupleHeader的传入函数的参数、字段名称、一个确定字段是否为NULL的返回参数。
+ * 类型为 HeapTupleHeader 的传入函数的参数、字段名称、一个确定字段是否为NULL的返回参数。
  * GetAttributeByName 函数返回一个Datum值，可以用对应的DatumGetXXX()宏把它转换成合适的数据类型。
  */
 

@@ -6,7 +6,8 @@
 PG_MODULE_MAGIC;
 
 /*
- *返回一个记录集
+ * 返回一个记录集
+ * 《PostgreSQL服务器编程》
  */
 
 struct c_reverse_tuple_args{
@@ -23,8 +24,7 @@ Datum c_permutations_x(PG_FUNCTION_ARGS){
 	const int ips[6][3] = {
 			{0,1,2},{0,2,1},
 			{1,0,2},{1,2,0},
-			{2,0,1},{2,1,0}
-	};
+			{2,0,1},{2,1,0}};
 	int i,call_nr;
 
 	struct c_reverse_tuple_args *args;
@@ -34,7 +34,7 @@ Datum c_permutations_x(PG_FUNCTION_ARGS){
 		MemoryContext oldcontext;
 		//create a function context for cross_call persistence
 		funcctx = SRF_FIRSTCALL_INIT();
-		//switch to memory contexxt appropriate for multiple function calls
+		//switch to memory context appropriate for multiple function calls
 		oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 		//allocate and sero-full struct for persisting extracted arguments
 		args = palloc0(sizeof(struct c_reverse_tuple_args));
