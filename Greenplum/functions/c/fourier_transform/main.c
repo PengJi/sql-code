@@ -2,9 +2,15 @@
 #include "executor/executor.h"  /* for GetAttributeByName() */
 #include "funcapi.h"
 #include "fft.h"
+/*
 #include "catalog/heap.h"
 #include "access/heapam.h"
 #include "access/relscan.h"
+#include "utils/tqual.h"
+*/
+#include "access/heapam.h"
+#include "access/relscan.h"
+#include "utils/fmgroids.h"
 #include "utils/tqual.h"
 
 PG_MODULE_MAGIC;
@@ -36,17 +42,52 @@ fft_main(PG_FUNCTION_ARGS)
     HeapScanDesc scantb;
     HeapTuple tupletb;
     HeapTupleHeader thtb;
+	ScanKeyData entry;
     bool aisnull,bisnull;
 
     Oid relid = PG_GETARG_OID(0);
+
+	//ereport(INFO,(errmsg("read tuple: %d",relid)));
+
     reltb = heap_open(relid, AccessShareLock);
-    scantb = heap_beginscan(reltb, SnapshotNow, 0, NULL);
+
+	ereport(INFO,(errmsg("rd_id: %d",reltb->rd_id)));
+	ereport(INFO,(errmsg("natts: %d",reltb->rd_att->natts)));
+
+	/*
+	ScanKeyInit(&entry,
+				Anum_pg_index_indisclustered,
+				BTEqualStrategyNumber, F_BOOLEQ,
+				BoolGetDatum(true));
+	scantb = heap_beginscan(reltb, SnapshotNow, 1, &entry);
+	*/
+	scantb = heap_beginscan(reltb, SnapshotNow, 0, NULL);
+	if(scantb != NULL){
+		ereport(INFO,(errmsg("scantb is not NULL")));
+	}else{
+		ereport(INFO,(errmsg("scantb is NULL")));
+	}
+
+	ereport(INFO,(errmsg("rs_ntuples: %d",scantb->rs_ntuples)));
+	ereport(INFO,(errmsg("rs_nblocks: %d",scantb->rs_nblocks)));
+	ereport(INFO,(errmsg("rs_startblock: %d",scantb->rs_startblock)));
+
+	/*
+	if((tupletb = heap_getnext(scantb, ForwardScanDirection)) != NULL){
+		ereport(INFO,(errmsg("tupletb is not NULL")));
+	}else{
+		ereport(INFO,(errmsg("tupletb is NULL")));
+	}
+	*/
+
 	while ((tupletb = heap_getnext(scantb, ForwardScanDirection)) != NULL){
         thtb = tupletb->t_data;
         real = DatumGetFloat8(GetAttributeByName(thtb,"n1",&aisnull));
         imag = DatumGetFloat8(GetAttributeByName(thtb,"n2",&aisnull));
         ereport(INFO,(errmsg("read tuple: %.5f %.5f\n",real, imag)));
     }
+
+	//问题：tupletb为空
 
     heap_endscan(scantb);
     heap_close(reltb, AccessShareLock);
@@ -58,7 +99,7 @@ fft_main(PG_FUNCTION_ARGS)
     MakeInput();  
     fft_real(x,SAMPLE_NODES);  
     for (i=0; i<SAMPLE_NODES; i++) {
-        ereport(INFO,(errmsg("%.5f %.5f\n",x[i].real, x[i].imag)));
+        //ereport(INFO,(errmsg("%.5f %.5f\n",x[i].real, x[i].imag)));
     }
 
     /*
