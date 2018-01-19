@@ -81,6 +81,7 @@ int fft(TYPE_FFT *x, uint32_t N)
 			//jm1 = j - 1;
 			for (i=j-1; i<N; i+=le) {  /* loop for each butterfly */
 				ip = i + le2;
+				//mul
 				tR = x[ip].real * uR - x[ip].imag * uI;
 				tI = x[ip].real * uI + x[ip].imag * uR;
 				x[ip].real = x[i].real - tR;

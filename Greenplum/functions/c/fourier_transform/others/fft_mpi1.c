@@ -6,7 +6,8 @@
 /*
  * 并行FFT（快速傅里叶变换）程序  
  * http://blog.163.com/ld081055@126/blog/static/11818691520100894549728
- *
+ * 
+ * warning: 运行多进程时出问题
  */
 
 #define intsize sizeof(int)

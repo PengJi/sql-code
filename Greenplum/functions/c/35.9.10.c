@@ -41,7 +41,6 @@ make_array(PG_FUNCTION_ARGS)
     /* 有1个元素 */
     dims[0] = 1;
     /* 数组下界是1 */
-
     lbs[0] = 1;
 
     /* 获取有关元素类型需要的信息 */
