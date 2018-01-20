@@ -44,7 +44,7 @@ fft_main(PG_FUNCTION_ARGS)
     float r;
 
     //command = text_to_cstring(PG_GETARG_TEXT_P(0));
-    cnt = PG_GETARG_INT32(1);
+    cnt = PG_GETARG_INT32(0);
 
     SPI_connect();
     ret = SPI_exec(command, cnt);
@@ -72,9 +72,6 @@ fft_main(PG_FUNCTION_ARGS)
 			//准备数据
             x[j].real = r;
             x[j].imag = 0.0f;
-
-			//去掉也可
-			memset(buf,0,10);
         }
     }
 
