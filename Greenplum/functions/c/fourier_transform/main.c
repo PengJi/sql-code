@@ -8,6 +8,12 @@
 #include "utils/tqual.h"
 #include "executor/spi.h"
 
+/*
+ * 注意：
+ * 数据量必须为2的幂次
+ *
+ */
+
 PG_MODULE_MAGIC;
 
 #define  SAMPLE_NODES              (128)  
@@ -47,7 +53,7 @@ fft_main(PG_FUNCTION_ARGS)
     if (ret > 0 && SPI_tuptable != NULL){
         TupleDesc tupdesc = SPI_tuptable->tupdesc;
         SPITupleTable *tuptable = SPI_tuptable;
-        char buf[8192];
+        char buf[10];
         uint64 j;
 
         for (j = 0; j < proc; j++) //proc为表的行数
@@ -63,12 +69,18 @@ fft_main(PG_FUNCTION_ARGS)
 
             ereport(INFO,(errmsg("ROW: %s",buf))); //输出一行数据
             sscanf(buf,"%f",&r);
+			//准备数据
             x[j].real = r;
             x[j].imag = 0.0f;
+
+			//去掉也可
+			memset(buf,0,10);
         }
     }
 
+	//fft计算
     fft_real(x,proc);
+
     for(i=0; i<proc; i++){
         ereport(INFO,(errmsg("%.5f %.5f\n",x[i].real, x[i].imag)));
     }
