@@ -3,15 +3,12 @@
 #include "funcapi.h"
 #include "fft.h"
 /*
-#include "catalog/heap.h"
-#include "access/heapam.h"
-#include "access/relscan.h"
-#include "utils/tqual.h"
-*/
 #include "access/heapam.h"
 #include "access/relscan.h"
 #include "utils/fmgroids.h"
 #include "utils/tqual.h"
+*/
+#include "executor/spi.h"
 
 PG_MODULE_MAGIC;
 
@@ -33,6 +30,68 @@ static void MakeInput()
 PG_FUNCTION_INFO_V1(fft_main);
 
 //fft主函数
+Datum
+fft_main(PG_FUNCTION_ARGS)  
+{  
+    int i = 0;
+    /*
+    float8 real,imag;
+    Relation reltb;
+    HeapScanDesc scantb;
+    HeapTuple tupletb;
+    HeapTupleHeader thtb;
+    ScanKeyData entry;
+    bool aisnull,bisnull;
+    */
+    char *command="select val from test order by id";
+    int ret,cnt;
+    uint64 proc;
+
+    command = text_to_cstring(PG_GETARG_TEXT_P(0));
+    cnt = PG_GETARG_INT32(1);
+
+    SPI_connect();
+
+    ret = SPI_exec(command, cnt);
+
+    proc = SPI_processed;
+
+    if (ret > 0 && SPI_tuptable != NULL){
+        TupleDesc tupdesc = SPI_tuptable->tupdesc;
+        SPITupleTable *tuptable = SPI_tuptable;
+        char buf[8192];
+        uint64 j;
+
+        for (j = 0; j < proc; j++)
+        {
+            HeapTuple tuple = tuptable->vals[j];
+            int i;
+
+            for (i = 1, buf[0] = 0; i <= tupdesc->natts; i++)
+                snprintf(buf + strlen (buf), sizeof(buf) - strlen(buf), " %s%s",
+                        SPI_getvalue(tuple, tupdesc, i),
+                        (i == tupdesc->natts) ? " " : " |");
+            //elog(INFO, "EXECQ: %s", buf);
+            ereport(INFO,(errmsg("ROW: %s",buf)));
+        }
+    }
+
+    //ereport(INFO,(errmsg("read tuple: %d",relid)));
+
+    // float8 real = PG_GETARG_FLOAT8(1);
+    // float8 imag = PG_GETARG_FLOAT8(2);
+
+    //产生输入数据
+    MakeInput();  
+    fft_real(x,SAMPLE_NODES);  
+    for (i=0; i<SAMPLE_NODES; i++) {
+        //ereport(INFO,(errmsg("%.5f %.5f\n",x[i].real, x[i].imag)));
+    }
+
+    PG_RETURN_NULL();
+}
+
+PG_FUNCTION_INFO_V1(fft_main);
 Datum
 fft_main(PG_FUNCTION_ARGS)  
 {  

@@ -7,7 +7,7 @@ PG_MODULE_MAGIC;
 /*
  * 使用SPI_*()执行一个SQL查询
  */
-PG_FUNCTION_INFO_V1(add_ab);
+PG_FUNCTION_INFO_V1(count_returned_rows);
 Datum
 count_returned_rows(PG_FUNCTION_ROWS){
 	char *command;

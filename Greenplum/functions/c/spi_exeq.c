@@ -13,7 +13,6 @@
 PG_MODULE_MAGIC;
 #endif
 
-
 PG_FUNCTION_INFO_V1(execq);
 Datum
 execq(PG_FUNCTION_ARGS)
@@ -30,7 +29,7 @@ execq(PG_FUNCTION_ARGS)
 
     ret = SPI_exec(command, cnt);
 
-    proc = SPI_processed;
+    proc = SPI_processed; // number of rows
     /*
      * If some rows were fetched, print them via elog(INFO).
      */
