@@ -35,14 +35,13 @@ fft_main(PG_FUNCTION_ARGS)
     char *command="select val from test order by id";
     int ret,cnt;
     uint64 proc;
+    float r;
 
     //command = text_to_cstring(PG_GETARG_TEXT_P(0));
     cnt = PG_GETARG_INT32(1);
 
     SPI_connect();
-
     ret = SPI_exec(command, cnt);
-
     proc = SPI_processed;
 
     if (ret > 0 && SPI_tuptable != NULL){
@@ -51,27 +50,38 @@ fft_main(PG_FUNCTION_ARGS)
         char buf[8192];
         uint64 j;
 
-        for (j = 0; j < proc; j++)
+        for (j = 0; j < proc; j++) //proc为表的行数
         {
             HeapTuple tuple = tuptable->vals[j];
             int i;
 
-            for (i = 1, buf[0] = 0; i <= tupdesc->natts; i++)
+            for (i = 1, buf[0] = 0; i <= tupdesc->natts; i++){
                 snprintf(buf + strlen (buf), sizeof(buf) - strlen(buf), " %s%s",
                         SPI_getvalue(tuple, tupdesc, i),
                         (i == tupdesc->natts) ? " " : " |");
-            ereport(INFO,(errmsg("ROW: %s",buf)));
+            }
+
+            ereport(INFO,(errmsg("ROW: %s",buf))); //输出一行数据
+            sscanf(buf,"%f",&r);
+            x[j].real = r;
+            x[j].imag = 0.0f;
         }
     }
 
-    //ereport(INFO,(errmsg("read tuple: %d",relid)));
+    fft_real(x,proc);
+    for(i=0; i<proc; i++){
+        ereport(INFO,(errmsg("%.5f %.5f\n",x[i].real, x[i].imag)));
+    }
 
+    /*
     //产生输入数据
-    MakeInput();  
+    MakeInput(); 
+    //fft 
     fft_real(x,SAMPLE_NODES);  
     for (i=0; i<SAMPLE_NODES; i++) {
         //ereport(INFO,(errmsg("%.5f %.5f\n",x[i].real, x[i].imag)));
     }
+    */
 
 	SPI_finish();
 	//pfree(command);
