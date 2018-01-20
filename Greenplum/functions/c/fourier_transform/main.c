@@ -2,12 +2,10 @@
 #include "executor/executor.h"  /* for GetAttributeByName() */
 #include "funcapi.h"
 #include "fft.h"
-/*
 #include "access/heapam.h"
 #include "access/relscan.h"
 #include "utils/fmgroids.h"
 #include "utils/tqual.h"
-*/
 #include "executor/spi.h"
 
 PG_MODULE_MAGIC;
@@ -33,21 +31,12 @@ PG_FUNCTION_INFO_V1(fft_main);
 Datum
 fft_main(PG_FUNCTION_ARGS)  
 {  
-    int i = 0;
-    /*
-    float8 real,imag;
-    Relation reltb;
-    HeapScanDesc scantb;
-    HeapTuple tupletb;
-    HeapTupleHeader thtb;
-    ScanKeyData entry;
-    bool aisnull,bisnull;
-    */
+	int i;
     char *command="select val from test order by id";
     int ret,cnt;
     uint64 proc;
 
-    command = text_to_cstring(PG_GETARG_TEXT_P(0));
+    //command = text_to_cstring(PG_GETARG_TEXT_P(0));
     cnt = PG_GETARG_INT32(1);
 
     SPI_connect();
@@ -71,15 +60,11 @@ fft_main(PG_FUNCTION_ARGS)
                 snprintf(buf + strlen (buf), sizeof(buf) - strlen(buf), " %s%s",
                         SPI_getvalue(tuple, tupdesc, i),
                         (i == tupdesc->natts) ? " " : " |");
-            //elog(INFO, "EXECQ: %s", buf);
             ereport(INFO,(errmsg("ROW: %s",buf)));
         }
     }
 
     //ereport(INFO,(errmsg("read tuple: %d",relid)));
-
-    // float8 real = PG_GETARG_FLOAT8(1);
-    // float8 imag = PG_GETARG_FLOAT8(2);
 
     //产生输入数据
     MakeInput();  
@@ -88,12 +73,16 @@ fft_main(PG_FUNCTION_ARGS)
         //ereport(INFO,(errmsg("%.5f %.5f\n",x[i].real, x[i].imag)));
     }
 
-    PG_RETURN_NULL();
+	SPI_finish();
+	//pfree(command);
+
+    //PG_RETURN_NULL();
+	PG_RETURN_INT32(proc);
 }
 
-PG_FUNCTION_INFO_V1(fft_main);
+PG_FUNCTION_INFO_V1(fft_main1);
 Datum
-fft_main(PG_FUNCTION_ARGS)  
+fft_main1(PG_FUNCTION_ARGS)  
 {  
     int i = 0;
     float8 real,imag;
