@@ -8,7 +8,7 @@
  * https://wenku.baidu.com/view/84f640232f60ddccda38a0a2.html
  */
 
-#define MAX_N 50
+#define MAX_N 4096
 #define PI 3.1415926535897932
 #define EPS 10E-8
 #define V_TAG 99
