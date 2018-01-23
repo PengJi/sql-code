@@ -154,42 +154,6 @@ int leftPos, int rightPos, int totalLength)
  * Parameters:  f为待打印数组的首地址
  *              fLength为数组的长度
  */
-void print(const complex_t* f, int fLength)
-{
-    BOOL isPrint = FALSE;
-    int i;
-
-    /* f[0] */
-    if (abs(f[0].r) > EPS)
-    {
-        printf("%f", f[0].r);
-        isPrint = TRUE;
-    }
-
-    for(i = 1; i < fLength; i ++)
-    {
-        if (f[i].r > EPS)
-        {
-            if (isPrint)
-                printf(" + ");
-            else
-                isPrint = TRUE;
-            printf("%ft^%d", f[i].r, i);
-        }
-        else if (f[i].r < - EPS)
-        {
-            if(isPrint)
-                printf(" - ");
-            else
-                isPrint = TRUE;
-            printf("%ft^%d", -f[i].r, i);
-        }
-    }
-    if (isPrint == FALSE)
-        printf("0");
-    printf("\n");
-}
-
 void print_ereport(const complex_t* f, int fLength)
 {
     BOOL isPrint = FALSE;
@@ -231,16 +195,6 @@ void print_ereport(const complex_t* f, int fLength)
  * Parameters:  f为待打印数组的首地址
  *              fLength为数组的长度
  */
-void myprint(const complex_t* f, int fLength)
-{
-    int i;
-    for(i=0;i<fLength;i++)
-    {
-        printf("%f+%fi , ", f[i].r, f[i].i);
-    }
-    printf("\n");
-}
-
 void myprint_ereport(const complex_t* f, int fLength)
 {
     int i;
@@ -253,21 +207,6 @@ void myprint_ereport(const complex_t* f, int fLength)
 /*
  * 打印结果
  */
-void printres(const complex_t* f,int fLength)
-{
-	int i;
-
-	for(i=0;i<fLength;i+=2)
-	{		
-		if(f[i].i<0)
-			printf("%f-%fi\n",f[i].r,-f[i].i);
-		else
-			printf("%f+%fi\n",f[i].r,f[i].i);
-	}
-
-	printf("\n");
-}
-
 void printres_ereport(const complex_t* f,int fLength)
 {
 	int i;
@@ -287,47 +226,6 @@ void printres_ereport(const complex_t* f,int fLength)
 void addTransTime(double toAdd)
 {
 	transTime+=toAdd;
-}
-
-/*
- * 读文件初始化数据
- */
-BOOL readFromFile()
-{
-	int i;
-	FILE* fin=fopen("fftdata.txt","r");
-
-	if(fin==NULL)
-	{
-		printf("Cannot open input data file"
-		"Please create a file\"fftdata.txt\"\n");
-
-		return(FALSE);
-	}
-
-	fscanf(fin,"%d \n",&variableNum);
-	if((variableNum<1)||(variableNum>MAX_N))
-	{
-		printf("variableNum out of range! \n");
-		return(FALSE);
-	}
-
-	printf("variableNum=%d\n",variableNum);	
-	for(i=0;i<variableNum;i++)
-	{
-		fscanf(fin,"%lf",&p[i].r);
-		printf("p[%d].r=%lf   ",i,p[i].r);
-		p[i].i=0.0;
-	}
-	printf("\n");
-
-	fclose(fin);
-
-	printf("Read from data file \"dataIn.txt\"\n");
-	printf("p(t)=");
-	print(p,variableNum);
-	
-	return(TRUE);
 }
 
 /*
@@ -420,8 +318,9 @@ fft_main(PG_FUNCTION_ARGS)
 	        }
 	    }
 
-	    ereport(INFO,(errmsg("p(t)=")));
-		print_ereport(p,variableNum);
+		// 打印原始数组
+		// ereport(INFO,(errmsg("p(t)=")));
+		// print_ereport(p,variableNum);
 
 		SPI_finish();
 
@@ -505,107 +404,6 @@ fft_main(PG_FUNCTION_ARGS)
 		ereport(INFO,(errmsg("Total running time=%f(s)",totalTime)));
 		ereport(INFO,(errmsg("Distribute data time = %f(s)",transTime)));
 		ereport(INFO,(errmsg("Parallel compute time = %f(s) ",totalTime-transTime)));
-	}
-
-	MPI_Finalize();
-}
-
-int main(int argc,char * argv[])
-{
-	int rank,size,i;
-
-	MPI_Init(&argc,&argv);
-	MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-	MPI_Comm_size(MPI_COMM_WORLD,&size);
-
-	if(rank==0)
-	{
-		// 0# 进程从文件读入多项式p的阶数和系数序列
-		if(!readFromFile())
-			exit(-1);
-
-		// 进程数目太多，造成每个进程平均分配不到一个元素，异常退出
-		if(size>2*variableNum)
-		{
-			printf("Too many Processors,reduce your -np value \n");
-			MPI_Abort(MPI_COMM_WORLD,1);
-		}
-
-		beginTime=MPI_Wtime();
-
-		// 0#进程把多项式的阶数,p发送给其它进程
-		sendOrigData(size);
-
-		// 累计传输时间
-		addTransTime(MPI_Wtime()-beginTime);
-
-	}
-	else // 其它进程接收进程0发送来的数据，包括variableNum、数组p
-	{
-		recvOrigData();
-	}
-
-	// 初始化数组w，用于进行傅立叶变换
-	int wLength=2*variableNum;
-	for(i=0;i<wLength;i++)
-	{
-		w[i].r=cos(i*2*PI/wLength);
-		w[i].i=sin(i*2*PI/wLength);
-	}
-
-	// 划分各个进程的工作范围 startPos ~ stopPos
-	int everageLength=wLength/size;
-	int moreLength=wLength%size;
-	int startPos=moreLength+rank*everageLength;
-	int stopPos=startPos+everageLength-1;
-
-	if(rank==0)
-	{
-		startPos=0;
-		stopPos=moreLength+everageLength-1;
-	}
-
-    // 对p作FFT，输出序列为s，每个进程仅负责计算出序列中位置为startPos 到 stopPos的元素
-	evaluate(p,0,variableNum-1,w,s,startPos,stopPos,wLength);
-	
-	printf("partial results, process %d.\n",rank);	
-	myprint(s,wLength);
-	
-	// 各个进程都把s中自己负责计算出来的部分发送给进程0，并从进程0接收汇总的s
-	if(rank>0)
-	{
-		MPI_Send(s+startPos,everageLength*2,MPI_DOUBLE,0,S_TAG,MPI_COMM_WORLD);
-		MPI_Recv(s,wLength*2,MPI_DOUBLE,0,S_TAG2,MPI_COMM_WORLD,&status);
-	}
-	else // 进程0接收s片断，向其余进程发送完整的s
-	{
-		double tempTime=MPI_Wtime();
-
-		for(i=1;i<size;i++)
-		{
-			MPI_Recv(s+moreLength+i*everageLength,everageLength*2,MPI_DOUBLE,i,S_TAG,MPI_COMM_WORLD,&status);
-		}
-
-		for(i=1;i<size;i++)
-		{
-			MPI_Send(s,wLength*2,MPI_DOUBLE,i,S_TAG2,MPI_COMM_WORLD);
-		}
-
-		printf("The final results :\n");
-		printres(s,wLength);
-
-		addTransTime(MPI_Wtime()-tempTime);
-	}
-
-	if(rank==0)
-	{
-		totalTime=MPI_Wtime();
-		totalTime-=beginTime;
-
-		printf("\nUse prossor size=%d\n",size);
-		printf("Total running time=%f(s)\n",totalTime);
-		printf("Distribute data time = %f(s)\n",transTime);
-		printf("Parallel compute time = %f(s)\n ",totalTime-transTime);
 	}
 
 	MPI_Finalize();
