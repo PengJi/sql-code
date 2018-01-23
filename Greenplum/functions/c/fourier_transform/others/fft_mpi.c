@@ -214,11 +214,17 @@ void printres(const complex_t* f,int fLength)
 	printf("\n");
 }
 
+/*
+ * 添加运行时间
+ */
 void addTransTime(double toAdd)
 {
 	transTime+=toAdd;
 }
 
+/*
+ * 读文件初始化数据
+ */
 BOOL readFromFile()
 {
 	int i;
@@ -339,7 +345,7 @@ int main(int argc,char * argv[])
 		stopPos=moreLength+everageLength-1;
 	}
 
-    /* 对p作FFT，输出序列为s，每个进程仅负责计算出序列中位置为startPos 到 stopPos的元素 */
+    // 对p作FFT，输出序列为s，每个进程仅负责计算出序列中位置为startPos 到 stopPos的元素
 	evaluate(p,0,variableNum-1,w,s,startPos,stopPos,wLength);
 	
 	printf("partial results, process %d.\n",rank);	
