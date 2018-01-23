@@ -190,12 +190,13 @@ void print(const complex_t* f, int fLength)
     printf("\n");
 }
 
+/*
 void print_ereport(const complex_t* f, int fLength)
 {
     BOOL isPrint = FALSE;
     int i;
 
-    /* f[0] */
+    // f[0]
     if (abs(f[0].r) > EPS)
     {
         ereport(INFO,(errmsg("%f", f[0].r)));
@@ -224,6 +225,7 @@ void print_ereport(const complex_t* f, int fLength)
     if (isPrint == FALSE)
     	ereport(INFO,(errmsg("0")));
 }
+*/
 
 /*
  * Function:    myprint
@@ -309,6 +311,7 @@ BOOL readFromFile()
  * 从数据库表中读入数据
  * c 为返回行的数目
  */
+/*
 BOOL readFromDB(int c)
 {
 	int i;
@@ -363,6 +366,7 @@ BOOL readFromDB(int c)
 
 	return(TRUE);
 }
+*/
 
 /*
  * Function:    sendOrigData
@@ -645,9 +649,3 @@ int main(int argc,char * argv[])
 
 	MPI_Finalize();
 }
-
-/*
- * 编译执行
- * mpicc fft_mpi.c -lm
- * mpiexec -n 4 ./a.out
- */
