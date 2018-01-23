@@ -6,7 +6,7 @@
 #include "postgres.h"
 #include "executor/executor.h"  /* for GetAttributeByName() */
 #include "funcapi.h"
-#include "fft.h"
+#include "fmgr.h"
 #include "access/heapam.h"
 #include "access/relscan.h"
 #include "utils/fmgroids.h"
@@ -25,7 +25,8 @@ PG_MODULE_MAGIC;
 #define S_TAG 103
 #define S_TAG2 104
 
-typedef enum {FALSE,TRUE} BOOL;
+//typedef enum {FALSE,TRUE} BOOL;
+typedef int BOOL; 
 
 typedef struct 
 {
@@ -352,8 +353,8 @@ BOOL readFromDB()
             ereport(INFO,(errmsg("ROW: %s",buf))); //输出一行数据
             sscanf(buf,"%f",&r);
 			//准备数据
-            p[j].real = r;
-            p[j].imag = 0.0f;
+            p[j].r = r;
+            p[j].i = 0.0f;
         }
     }
 
@@ -380,16 +381,6 @@ void sendOrigData(int size)
 		MPI_Send(p, variableNum * 2, MPI_DOUBLE, i, P_TAG, MPI_COMM_WORLD);
 	}
 
-}
-
-/*
- * Function:    recvOrigData
- * Description:	接受原始数据
- */
-void recvOrigData()
-{
-	MPI_Recv(&variableNum,1,MPI_INT,0,V_TAG,MPI_COMM_WORLD,&status);
-	MPI_Recv(p, variableNum * 2, MPI_DOUBLE, 0, P_TAG, MPI_COMM_WORLD, &status);
 }
 
 /*
