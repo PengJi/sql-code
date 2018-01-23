@@ -274,7 +274,8 @@ fft_main(PG_FUNCTION_ARGS)
 		// 0# 进程从文件读入多项式p的阶数和系数序列
 		// if(!readFromDB(MAX_LINE))
 		// 	exit(-1);
-
+		
+		/*
 		char *command="select val from test order by id";
 	    int ret;
 	    uint64 proc;
@@ -323,6 +324,13 @@ fft_main(PG_FUNCTION_ARGS)
 		// print_ereport(p,variableNum);
 
 		SPI_finish();
+		*/
+
+		variableNum=4;
+		p[0].r = 1.0; p[0].i = 0.0;
+		p[1].r = 2.0; p[1].i = 0.0;
+		p[2].r = 4.0; p[2].i = 0.0;
+		p[3].r = 3.0; p[3].i = 0.0;
 
 		// 进程数目太多，造成每个进程平均分配不到一个元素，异常退出
 		if(size>2*variableNum)
