@@ -4,6 +4,11 @@
 #include <time.h>
 #include <omp.h>
 
+/*
+ * OpenMP实现fft
+ * https://people.sc.fsu.edu/~jburkardt/c_src/fft_openmp/fft_openmp.html
+ */
+
 int main ( void );
 void ccopy ( int n, double x[], double y[] );
 void cfft2 ( int n, double x[], double y[], double w[], double sgn );
@@ -45,7 +50,7 @@ void ccopy ( int n, double x[], double y[] )
     CFFT2 performs a complex Fast Fourier Transform.
 
   Parameters:
-    Input, int n, the size of the array to be transformed.
+    Input, int N, the size of the array to be transformed.
     Input/output, double X[2*N], the data to be transformed. On output, the contents of X have been overwritten by work information.
     Output, double Y[2*N], the forward or backward FFT of X.
     Input, double W[N], a table of sines and cosines.
@@ -119,7 +124,6 @@ void cffti ( int n, double w[] )
 #pragma omp parallel \
     shared ( aw, n, w ) \
     private ( arg, i )
-
 #pragma omp for nowait
 
   for ( i = 0; i < n2; i++ )
@@ -146,7 +150,7 @@ double ggl ( double *seed )
   double value;
 
   t = ( double ) *seed;
-  t = fmod ( 16807.0 * t, d2 );
+  t = fmod( 16807.0 * t, d2 );
   *seed = ( double ) t;
   value = ( double ) ( ( t - 1.0 ) / ( d2 - 1.0 ) );
 
@@ -316,7 +320,7 @@ int main ( void )
   and store a complex number as a pair of doubles, a complex vector as a doubly
   dimensioned array whose second dimension is 2. 
 */
-	w = ( double * ) malloc (     n * sizeof ( double ) );
+	  w = ( double * ) malloc (     n * sizeof ( double ) );
     x = ( double * ) malloc ( 2 * n * sizeof ( double ) );
     y = ( double * ) malloc ( 2 * n * sizeof ( double ) );
     z = ( double * ) malloc ( 2 * n * sizeof ( double ) );
@@ -342,7 +346,6 @@ int main ( void )
 #pragma omp parallel \
     shared ( n, x, z ) \
     private ( i, z0, z1 )
-
 #pragma omp for nowait
 
         for ( i = 0; i < 2 * n; i = i + 2 )
@@ -356,18 +359,18 @@ int main ( void )
         }
       }
 
-  //Initialize the sine and cosine tables.
-      cffti ( n, w );
+      //Initialize the sine and cosine tables.
+      cffti( n, w );
 
-  //Transform forward, back 
+      //Transform forward, back 
       if ( first )
       {
         sgn = + 1.0;
-        cfft2 ( n, x, y, w, sgn );
+        cfft2( n, x, y, w, sgn );
         sgn = - 1.0;
-        cfft2 ( n, y, x, w, sgn );
+        cfft2( n, y, x, w, sgn );
 
-  //Results should be same as the initial data multiplied by N.
+        //Results should be same as the initial data multiplied by N.
         fnm1 = 1.0 / ( double ) n;
         error = 0.0;
         for ( i = 0; i < 2 * n; i = i + 2 )
@@ -382,7 +385,7 @@ int main ( void )
       }
       else
       {
-        wtime = omp_get_wtime ( );
+        wtime = omp_get_wtime();
         for ( it = 0; it < nits; it++ )
         {
           sgn = + 1.0;
@@ -390,14 +393,14 @@ int main ( void )
           sgn = - 1.0;
           cfft2 ( n, y, x, w, sgn );
         }
-        wtime = omp_get_wtime ( ) - wtime;
+        wtime = omp_get_wtime() - wtime;
 
-        flops = 2.0 * ( double ) nits 
-          * ( 5.0 * ( double ) n * ( double ) ln2 );
+        flops = 2.0 * (double) nits 
+          * ( 5.0 * (double) n * (double) ln2 );
 
         mflops = flops / 1.0E+06 / wtime;
 
-        printf ( "  %12e  %12e  %12f\n", wtime, wtime / ( double ) ( 2 * nits ), mflops );
+        printf( "  %12e  %12e  %12f\n", wtime, wtime / (double) ( 2 * nits ), mflops );
       }
     }
     if ( ( ln2 % 4 ) == 0 ) 
