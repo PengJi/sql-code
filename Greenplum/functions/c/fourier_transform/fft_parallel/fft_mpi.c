@@ -10,7 +10,6 @@
 #include "utils/fmgroids.h"
 #include "utils/tqual.h"
 #include "utils/builtins.h"
-#include "executor/executor.h"  /* for GetAttributeByName() */
 #include "executor/spi.h"
 
 #define MAX_N 4096
@@ -22,6 +21,7 @@
 #define R_TAG 102
 #define S_TAG 103
 #define S_TAG2 104
+#define MAX_LINE 16384
 
 PG_MODULE_MAGIC;
 
@@ -223,7 +223,6 @@ void print_ereport(const complex_t* f, int fLength)
     }
     if (isPrint == FALSE)
     	ereport(INFO,(errmsg("0")));
-    ereport(INFO,(errmsg("\n")));
 }
 
 /*
@@ -328,11 +327,10 @@ BOOL readFromDB(int c)
 
 	if((variableNum<1)||(variableNum>MAX_N))
 	{
-		ereport(INFO,(errmsg("variableNum out of range! \n")));
+		ereport(INFO,(errmsg("variableNum out of range!")));
 		return(FALSE);
 	}
-	ereport(INFO,(errmsg("variableNum=%d\n",variableNum)));
-	ereport(INFO,(errmsg("\n")));
+	ereport(INFO,(errmsg("variableNum=%d",variableNum)));
 
     if (ret > 0 && SPI_tuptable != NULL){
         TupleDesc tupdesc = SPI_tuptable->tupdesc;
@@ -359,7 +357,7 @@ BOOL readFromDB(int c)
     }
 
     ereport(INFO,(errmsg("p(t)=")));
-	print_ereport(p,variableNum);
+	//print_ereport(p,variableNum);
 
 	SPI_finish();
 
@@ -402,20 +400,20 @@ fft_main(PG_FUNCTION_ARGS)
 {
 	int rank,size,i;
 
-	MPI_Init(&argc,&argv);
+	MPI_Init(PG_GETARG_INT32(0),PG_GETARG_INT32(1));
 	MPI_Comm_rank(MPI_COMM_WORLD,&rank);
 	MPI_Comm_size(MPI_COMM_WORLD,&size);
 
 	if(rank==0)
 	{
 		// 0# 进程从文件读入多项式p的阶数和系数序列
-		if(!readFromDB())
+		if(!readFromDB(MAX_LINE))
 			exit(-1);
 
 		// 进程数目太多，造成每个进程平均分配不到一个元素，异常退出
 		if(size>2*variableNum)
 		{
-			ereport(INFO,(errmsg("Too many Processors,reduce your -np value \n")));
+			ereport(INFO,(errmsg("Too many Processors,reduce your -np value")));
 			MPI_Abort(MPI_COMM_WORLD,1);
 		}
 
@@ -456,7 +454,7 @@ fft_main(PG_FUNCTION_ARGS)
     // 对p作FFT，输出序列为s，每个进程仅负责计算出序列中位置为startPos 到 stopPos的元素
 	evaluate(p,0,variableNum-1,w,s,startPos,stopPos,wLength);
 	
-	ereport(INFO,(errmsg("partial results, process %d.\n",rank)));
+	ereport(INFO,(errmsg("partial results, process %d.",rank)));
 	myprint(s,wLength);
 	
 	// 各个进程都把s中自己负责计算出来的部分发送给进程0，并从进程0接收汇总的s
@@ -479,7 +477,7 @@ fft_main(PG_FUNCTION_ARGS)
 			MPI_Send(s,wLength*2,MPI_DOUBLE,i,S_TAG2,MPI_COMM_WORLD);
 		}
 
-		ereport(INFO,(errmsg("The final results :\n")));
+		ereport(INFO,(errmsg("The final results :")));
 		printres(s,wLength);
 
 		addTransTime(MPI_Wtime()-tempTime);
@@ -490,10 +488,10 @@ fft_main(PG_FUNCTION_ARGS)
 		totalTime=MPI_Wtime();
 		totalTime-=beginTime;
 
-		ereport(INFO,(errmsg("\nUse prossor size=%d\n",size)));
-		ereport(INFO,(errmsg("Total running time=%f(s)\n",totalTime)));
-		ereport(INFO,(errmsg("Distribute data time = %f(s)\n",transTime)));
-		ereport(INFO,(errmsg("Parallel compute time = %f(s)\n ",totalTime-transTime)));
+		ereport(INFO,(errmsg("Use prossor size=%d",size)));
+		ereport(INFO,(errmsg("Total running time=%f(s)",totalTime)));
+		ereport(INFO,(errmsg("Distribute data time = %f(s)",transTime)));
+		ereport(INFO,(errmsg("Parallel compute time = %f(s) ",totalTime-transTime)));
 	}
 
 	MPI_Finalize();
