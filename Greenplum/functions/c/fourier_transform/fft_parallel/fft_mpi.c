@@ -190,7 +190,6 @@ void print(const complex_t* f, int fLength)
     printf("\n");
 }
 
-/*
 void print_ereport(const complex_t* f, int fLength)
 {
     BOOL isPrint = FALSE;
@@ -225,7 +224,6 @@ void print_ereport(const complex_t* f, int fLength)
     if (isPrint == FALSE)
     	ereport(INFO,(errmsg("0")));
 }
-*/
 
 /*
  * Function:    myprint
@@ -243,6 +241,18 @@ void myprint(const complex_t* f, int fLength)
     printf("\n");
 }
 
+void myprint_ereport(const complex_t* f, int fLength)
+{
+    int i;
+    for(i=0;i<fLength;i++)
+    {
+        ereport(INFO,(errmsg("%f+%fi , ", f[i].r, f[i].i)));
+    }
+}
+
+/*
+ * 打印结果
+ */
 void printres(const complex_t* f,int fLength)
 {
 	int i;
@@ -256,6 +266,19 @@ void printres(const complex_t* f,int fLength)
 	}
 
 	printf("\n");
+}
+
+void printres_ereport(const complex_t* f,int fLength)
+{
+	int i;
+
+	for(i=0;i<fLength;i+=2)
+	{		
+		if(f[i].i<0)
+			ereport(INFO,(errmsg("%f-%fi\n",f[i].r,-f[i].i)));
+		else
+			ereport(INFO,(errmsg("%f+%fi\n",f[i].r,f[i].i)));
+	}
 }
 
 /*
@@ -308,67 +331,6 @@ BOOL readFromFile()
 }
 
 /*
- * 从数据库表中读入数据
- * c 为返回行的数目
- */
-/*
-BOOL readFromDB(int c)
-{
-	int i;
-    char *command="select val from test order by id";
-    int ret,cnt;
-    uint64 proc;
-    float r;
-
-    //command = text_to_cstring(PG_GETARG_TEXT_P(0));
-    cnt = c;
-
-    SPI_connect();
-    ret = SPI_exec(command, cnt);
-    variableNum=SPI_processed;
-    proc = SPI_processed;
-
-	if((variableNum<1)||(variableNum>MAX_N))
-	{
-		ereport(INFO,(errmsg("variableNum out of range!")));
-		return(FALSE);
-	}
-	ereport(INFO,(errmsg("variableNum=%d",variableNum)));
-
-    if (ret > 0 && SPI_tuptable != NULL){
-        TupleDesc tupdesc = SPI_tuptable->tupdesc;
-        SPITupleTable *tuptable = SPI_tuptable;
-        char buf[10];
-        uint64 j;
-
-        for (j = 0; j < proc; j++) //proc为表的行数
-        {
-            HeapTuple tuple = tuptable->vals[j];
-
-            for (i = 1, buf[0] = 0; i <= tupdesc->natts; i++){
-                snprintf(buf + strlen (buf), sizeof(buf) - strlen(buf), " %s%s",
-                        SPI_getvalue(tuple, tupdesc, i),
-                        (i == tupdesc->natts) ? " " : " |");
-            }
-
-            ereport(INFO,(errmsg("ROW: %s",buf))); //输出一行数据
-            sscanf(buf,"%f",&r);
-			//准备数据
-            p[j].r = r;
-            p[j].i = 0.0f;
-        }
-    }
-
-    ereport(INFO,(errmsg("p(t)=")));
-	//print_ereport(p,variableNum);
-
-	SPI_finish();
-
-	return(TRUE);
-}
-*/
-
-/*
  * Function:    sendOrigData
  * Description: 把原始数据发送给其它进程
  * Parameters:  size为集群中进程的数目
@@ -408,6 +370,7 @@ fft_main(PG_FUNCTION_ARGS)
 	MPI_Comm_rank(MPI_COMM_WORLD,&rank);
 	MPI_Comm_size(MPI_COMM_WORLD,&size);
 
+	// 初始进程
 	if(rank==0)
 	{
 		// 0# 进程从文件读入多项式p的阶数和系数序列
@@ -458,7 +421,7 @@ fft_main(PG_FUNCTION_ARGS)
 	    }
 
 	    ereport(INFO,(errmsg("p(t)=")));
-		//print_ereport(p,variableNum);
+		print_ereport(p,variableNum);
 
 		SPI_finish();
 
@@ -477,9 +440,7 @@ fft_main(PG_FUNCTION_ARGS)
 		// 累计传输时间
 		addTransTime(MPI_Wtime()-beginTime);
 
-	}
-	else // 其它进程接收进程0发送来的数据，包括variableNum、数组p
-	{
+	}else{ // 其它进程接收进程0发送来的数据，包括variableNum、数组p
 		recvOrigData();
 	}
 
@@ -507,7 +468,7 @@ fft_main(PG_FUNCTION_ARGS)
 	evaluate(p,0,variableNum-1,w,s,startPos,stopPos,wLength);
 	
 	ereport(INFO,(errmsg("partial results, process %d.",rank)));
-	myprint(s,wLength);
+	myprint_ereport(s,wLength);
 	
 	// 各个进程都把s中自己负责计算出来的部分发送给进程0，并从进程0接收汇总的s
 	if(rank>0)
@@ -530,7 +491,7 @@ fft_main(PG_FUNCTION_ARGS)
 		}
 
 		ereport(INFO,(errmsg("The final results :")));
-		printres(s,wLength);
+		printres_ereport(s,wLength);
 
 		addTransTime(MPI_Wtime()-tempTime);
 	}
