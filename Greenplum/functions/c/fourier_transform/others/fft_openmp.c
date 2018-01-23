@@ -426,3 +426,8 @@ int main ( void )
 
   return 0;
 }
+
+/*
+ * gcc fft_openmp.c -fopenmp -lm
+ * ./a.out
+ */
