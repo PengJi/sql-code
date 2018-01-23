@@ -4,16 +4,14 @@
 #include "mpi.h"
 
 #include "postgres.h"
-#include "executor/executor.h"  /* for GetAttributeByName() */
 #include "funcapi.h"
-#include "fmgr.h"
 #include "access/heapam.h"
 #include "access/relscan.h"
 #include "utils/fmgroids.h"
 #include "utils/tqual.h"
+#include "utils/builtins.h"
+#include "executor/executor.h"  /* for GetAttributeByName() */
 #include "executor/spi.h"
-
-PG_MODULE_MAGIC;
 
 #define MAX_N 4096
 #define PI 3.1415926535897932
@@ -24,6 +22,8 @@ PG_MODULE_MAGIC;
 #define R_TAG 102
 #define S_TAG 103
 #define S_TAG2 104
+
+PG_MODULE_MAGIC;
 
 //typedef enum {FALSE,TRUE} BOOL;
 typedef int BOOL; 
@@ -97,8 +97,7 @@ void shuffle(complex_t* f, int beginPos, int endPos)
  * 			rightPos : 所负责计算输出的y的片断的终止下标
  * 			totalLength : y的长度
  */
-void evaluate(complex_t* f, int beginPos, int endPos,
-const complex_t* x, complex_t* y,
+void evaluate(complex_t* f, int beginPos, int endPos,const complex_t* x, complex_t* y,
 int leftPos, int rightPos, int totalLength)
 {
     int i;
