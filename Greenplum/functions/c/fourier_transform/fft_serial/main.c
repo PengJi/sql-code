@@ -1,12 +1,12 @@
 #include "postgres.h"
-#include "executor/executor.h"  /* for GetAttributeByName() */
 #include "funcapi.h"
-#include "fft.h"
 #include "access/heapam.h"
 #include "access/relscan.h"
 #include "utils/fmgroids.h"
 #include "utils/tqual.h"
 #include "executor/spi.h"
+#include "executor/executor.h"  /* for GetAttributeByName() */
+#include "fft.h"
 
 /*
  * 注意：
