@@ -257,6 +257,11 @@ BOOL readFromFile()
 	return(TRUE);
 }
 
+/*
+ * Function:    sendOrigData
+ * Description: 把原始数据发送给其它进程
+ * Parameters:  size为集群中进程的数目
+ */
 void sendOrigData(int size)
 {
 	int i;
@@ -264,18 +269,20 @@ void sendOrigData(int size)
 	for(i=1;i<size;i++)
 	{
 		MPI_Send(&variableNum,1,MPI_INT,i,V_TAG,MPI_COMM_WORLD);
-		MPI_Send(p,variableNum*2,MPI_DOUBLE,i,P_TAG,MPI_COMM_WORLD);
+		MPI_Send(p, variableNum * 2, MPI_DOUBLE, i, P_TAG, MPI_COMM_WORLD);
 	}
 
 }
  
-
+/*
+ * Function:    recvOrigData
+ * Description:	接受原始数据
+ */
 void recvOrigData()
 {
 	MPI_Recv(&variableNum,1,MPI_INT,0,V_TAG,MPI_COMM_WORLD,&status);
-	MPI_Recv(p,variableNum*2,MPI_DOUBLE,0,P_TAG,MPI_COMM_WORLD,&status);
+	MPI_Recv(p, variableNum * 2, MPI_DOUBLE, 0, P_TAG, MPI_COMM_WORLD, &status);
 }
-
 
 int main(int argc,char * argv[])
 {
@@ -287,9 +294,11 @@ int main(int argc,char * argv[])
 
 	if(rank==0)
 	{
+		// 0# 进程从文件读入多项式p的阶数和系数序列
 		if(!readFromFile())
 			exit(-1);
 
+		// 进程数目太多，造成每个进程平均分配不到一个元素，异常退出
 		if(size>2*variableNum)
 		{
 			printf("Too many Processors,reduce your -np value \n");
@@ -297,23 +306,28 @@ int main(int argc,char * argv[])
 		}
 
 		beginTime=MPI_Wtime();
+
+		// 0#进程把多项式的阶数,p发送给其它进程
 		sendOrigData(size);
+
+		// 累计传输时间
 		addTransTime(MPI_Wtime()-beginTime);
 
 	}
-	else
+	else // 其它进程接收进程0发送来的数据，包括variableNum、数组p
 	{
 		recvOrigData();
 	}
 
+	// 初始化数组w，用于进行傅立叶变换
 	int wLength=2*variableNum;
-
 	for(i=0;i<wLength;i++)
 	{
 		w[i].r=cos(i*2*PI/wLength);
 		w[i].i=sin(i*2*PI/wLength);
 	}
 
+	// 划分各个进程的工作范围 startPos ~ stopPos
 	int everageLength=wLength/size;
 	int moreLength=wLength%size;
 	int startPos=moreLength+rank*everageLength;
@@ -325,17 +339,19 @@ int main(int argc,char * argv[])
 		stopPos=moreLength+everageLength-1;
 	}
 
+    /* 对p作FFT，输出序列为s，每个进程仅负责计算出序列中位置为startPos 到 stopPos的元素 */
 	evaluate(p,0,variableNum-1,w,s,startPos,stopPos,wLength);
 	
 	printf("partial results, process %d.\n",rank);	
 	myprint(s,wLength);
 	
+	// 各个进程都把s中自己负责计算出来的部分发送给进程0，并从进程0接收汇总的s
 	if(rank>0)
 	{
 		MPI_Send(s+startPos,everageLength*2,MPI_DOUBLE,0,S_TAG,MPI_COMM_WORLD);
 		MPI_Recv(s,wLength*2,MPI_DOUBLE,0,S_TAG2,MPI_COMM_WORLD,&status);
 	}
-	else
+	else // 进程0接收s片断，向其余进程发送完整的s
 	{
 		double tempTime=MPI_Wtime();
 
@@ -349,8 +365,8 @@ int main(int argc,char * argv[])
 			MPI_Send(s,wLength*2,MPI_DOUBLE,i,S_TAG2,MPI_COMM_WORLD);
 		}
 
-	      printf("The final results :\n");
-	      printres(s,wLength);
+		printf("The final results :\n");
+		printres(s,wLength);
 
 		addTransTime(MPI_Wtime()-tempTime);
 	}
