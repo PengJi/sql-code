@@ -1,0 +1,4 @@
+create or replace function fft()
+returns int
+as '/home/gpdba/sql_prac/Greenplum/functions/c/fourier_transform/fft', 'fft_main'
+language c strict;
