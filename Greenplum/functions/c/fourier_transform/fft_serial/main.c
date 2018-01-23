@@ -100,6 +100,9 @@ fft_main(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(fft_main1);
+/*
+ * 方法有bug，需改进
+ */
 Datum
 fft_main1(PG_FUNCTION_ARGS)  
 {  
