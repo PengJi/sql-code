@@ -404,7 +404,7 @@ fft_main(PG_FUNCTION_ARGS)
 {
 	int rank,size,i;
 
-	MPI_Init(PG_GETARG_INT32(0),PG_GETARG_INT32(1));
+	MPI_Init(NULL,NULL);
 	MPI_Comm_rank(MPI_COMM_WORLD,&rank);
 	MPI_Comm_size(MPI_COMM_WORLD,&size);
 
