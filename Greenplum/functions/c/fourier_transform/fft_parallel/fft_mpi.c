@@ -308,8 +308,9 @@ BOOL readFromFile()
 
 /*
  * 从数据库表中读入数据
+ * c 为返回行的数目
  */
-BOOL readFromDB()
+BOOL readFromDB(int c)
 {
 	int i;
     char *command="select val from test order by id";
@@ -318,7 +319,7 @@ BOOL readFromDB()
     float r;
 
     //command = text_to_cstring(PG_GETARG_TEXT_P(0));
-    cnt = PG_GETARG_INT32(0);
+    cnt = c;
 
     SPI_connect();
     ret = SPI_exec(command, cnt);
@@ -357,8 +358,8 @@ BOOL readFromDB()
         }
     }
 
-    printf("p(t)=");
-	print(p,variableNum);
+    ereport(INFO,(errmsg("p(t)=")));
+	print_ereport(p,variableNum);
 
 	SPI_finish();
 
