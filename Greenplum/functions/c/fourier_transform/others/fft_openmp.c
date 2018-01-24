@@ -191,6 +191,7 @@ void step ( int n, int mj, double a[], double b[], double c[],
 
   for ( j = 0; j < lj; j++ )
   {
+    printf("current thread = %d\n", omp_get_thread_num() );
     jw = j * mj;
     ja  = jw;
     jb  = ja;
@@ -291,8 +292,8 @@ int source_main ( void )
   printf ( "  of a complex data vector, using OpenMP for parallel execution.\n" );
 
   printf ( "\n" );
-  printf ( "  Number of processors available = %d\n", omp_get_num_procs ( ) );
-  printf ( "  Number of threads =              %d\n", omp_get_max_threads ( ) );
+  printf ( "  Number of processors available = %d\n", omp_get_num_procs() );
+  printf ( "  Number of threads =              %d\n", omp_get_max_threads() );
 
   //Prepare for tests.
   printf ( "\n" );
@@ -435,8 +436,8 @@ int test_main(void)
   timestamp();
 
   printf( "\n" );
-  printf( "  Number of processors available = %d\n", omp_get_num_procs ( ) );
-  printf( "  Number of threads =              %d\n", omp_get_max_threads ( ) );
+  printf( "  Number of processors available = %d\n", omp_get_num_procs() );
+  printf( "  Number of threads =              %d\n", omp_get_max_threads() );
 
   //Prepare for tests.
   printf( "\n" );

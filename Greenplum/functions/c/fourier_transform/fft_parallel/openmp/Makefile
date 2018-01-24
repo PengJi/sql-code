@@ -5,10 +5,7 @@ SRC_FFT = fft_openmp.c
 
 fft.so:$(SRC_FFT)
 	#gcc $^ -o $@ -lm
-	#mpi parallel
-	#mpicc -fpic -c $^ -I/home/gpdba/greenplum/include/postgresql/server -lm
-	#mpicc -shared -o $@ *.o
-	gcc -fpic -c $^ -I/home/gpdba/greenplum/include/postgresql/server -fopenmp -lm
+	gcc -fpic -c $^ -I/home/gpdba/greenplum/include/postgresql/server -fopenmp 
 	gcc -shared -o $@ *.o
 
 .PHONY: clean
