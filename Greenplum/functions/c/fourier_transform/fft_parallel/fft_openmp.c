@@ -328,13 +328,13 @@ int fft_main(void)
     private ( i, z0, z1 )
 #pragma omp for nowait
 
-        // for(i=0; i<2*n; i=i+2)
-        // {
-        //   z0 = 0.0; // real part of array
-        //   z1 = 0.0; // imaginary part of array
-        //   x[i] = z0; // copy of initial real data
-        //   x[i+1] = z1; // copy of initial imag. data
-        // }
+        for(i=0; i<2*n; i=i+2)
+        {
+          z0 = 0.0; // real part of array
+          z1 = 0.0; // imaginary part of array
+          x[i] = z0; // copy of initial real data
+          x[i+1] = z1; // copy of initial imag. data
+        }
       }
 
       //Initialize the sine and cosine tables.
