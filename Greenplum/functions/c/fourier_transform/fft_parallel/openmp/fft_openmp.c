@@ -39,7 +39,7 @@ void timestamp( void );
     Input, double X[2*N], the vector to be copied.
     Output, double Y[2*N], a copy of X.
 */
-void ccopy ( int n, double x[], double y[] )
+void ccopy( int n, double x[], double y[] )
 {
   int i;
 
@@ -76,15 +76,15 @@ void cfft2( int n, double x[], double y[], double w[], double sgn )
   tgle = 1;
   step( n, mj, &x[0*2+0], &x[(n/2)*2+0], &y[0*2+0], &y[mj*2+0], w, sgn );
 
-  if ( n == 2 )
+  if( n == 2 )
   {
     return;
   }
 
-  for ( j = 0; j < m - 2; j++ )
+  for( j = 0; j < m - 2; j++ )
   {
     mj = mj * 2;
-    if ( tgle )
+    if( tgle )
     {
       step( n, mj, &y[0*2+0], &y[(n/2)*2+0], &x[0*2+0], &x[mj*2+0], w, sgn );
       tgle = 0;
@@ -97,7 +97,7 @@ void cfft2( int n, double x[], double y[], double w[], double sgn )
   }
 
   //Last pass through data: move Y to X if needed.
-  if ( tgle ) 
+  if( tgle ) 
   {
     ccopy( n, y, x );
   }
@@ -132,7 +132,7 @@ void cffti( int n, double w[] )
     private ( arg, i )
 #pragma omp for nowait
 
-  for ( i = 0; i < n2; i++ )
+  for( i = 0; i < n2; i++ )
   {
     arg = aw * ( ( double ) i );
     w[i*2+0] = cos( arg );
@@ -194,7 +194,7 @@ void step( int n, int mj, double a[], double b[], double c[],
     private ( ambr, ambu, j, ja, jb, jc, jd, jw, k, wjw )
 #pragma omp for nowait
 
-  for ( j = 0; j < lj; j++ )
+  for( j = 0; j < lj; j++ )
   {
     jw = j * mj;
     ja  = jw;
@@ -205,12 +205,12 @@ void step( int n, int mj, double a[], double b[], double c[],
     wjw[0] = w[jw*2+0]; 
     wjw[1] = w[jw*2+1];
 
-    if ( sgn < 0.0 ) 
+    if( sgn < 0.0 ) 
     {
       wjw[1] = - wjw[1];
     }
 
-    for ( k = 0; k < mj; k++ )
+    for( k = 0; k < mj; k++ )
     {
       c[(jc+k)*2+0] = a[(ja+k)*2+0] + b[(jb+k)*2+0];
       c[(jc+k)*2+1] = a[(ja+k)*2+1] + b[(jb+k)*2+1];
