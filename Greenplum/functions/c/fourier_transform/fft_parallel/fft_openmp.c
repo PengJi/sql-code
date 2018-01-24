@@ -4,10 +4,16 @@
 #include <time.h>
 #include <omp.h>
 
-/*
- * OpenMP实现fft
- * https://people.sc.fsu.edu/~jburkardt/c_src/fft_openmp/fft_openmp.html
- */
+#include "postgres.h"
+#include "funcapi.h"
+#include "access/heapam.h"
+#include "access/relscan.h"
+#include "utils/fmgroids.h"
+#include "utils/tqual.h"
+#include "utils/builtins.h"
+#include "executor/spi.h"
+
+PG_MODULE_MAGIC;
 
 int main( void );
 void ccopy( int n, double x[], double y[] );
@@ -248,7 +254,7 @@ void timestamp( void )
 
 /* 
   Purpose:
-    MAIN is the main program for FFT_OPENMP.
+    fft的UDF实现
 
   Discussion:
     The "complex" vector A is actually stored as a double vector B.
@@ -257,7 +263,9 @@ void timestamp( void )
       B[I*2+1], the imaginary part.
 
 */
-int fft_main(void)
+PG_FUNCTION_INFO_V1(fft_main);
+Datum 
+fft_main(PG_FUNCTION_ARGS)
 {
   int i,n;
   double sgn;
@@ -265,19 +273,85 @@ int fft_main(void)
   double wtime;
   double *x,*y,*z;
 
-  timestamp ( );
+  timestamp();
 
-  printf ( "\n" );
-  printf ( "  Number of processors available = %d\n", omp_get_num_procs ( ) );
-  printf ( "  Number of threads =              %d\n", omp_get_max_threads ( ) );
+  ereport(INFO,(errmsg("  Number of processors available = %d\n", omp_get_num_procs())));
+  ereport(INFO,(errmsg("  Number of threads =              %d\n", omp_get_max_threads())));
 
   //Prepare for tests.
-  printf ( "\n" );
-  printf ( "             N      Time\n" );
-  printf ( "\n" );
+  ereport(INFO,(errmsg("             N      Time\n")));
 
   n = 4;
+  w = (double *) malloc(    n * sizeof(double));
+  x = (double *) malloc(2 * n * sizeof(double));
+  y = (double *) malloc(2 * n * sizeof(double));
+  z = (double *) malloc(2 * n * sizeof(double));
 
+  //初始化数据
+  x[0]=1.0; x[1]=0.0;
+  x[2]=2.0; x[3]=0.0;
+  x[4]=4.0; x[5]=0.0;
+  x[6]=3.0; x[7]=0.0;
+
+  ereport(INFO,(errmsg("x=")));
+  for(i=0; i<2*n; i++){
+    ereport(INFO,(errmsg("%f,",x[i])));
+  }
+
+  //Initialize the sine and cosine tables.
+  cffti(n, w);
+
+  wtime = omp_get_wtime();
+
+  //Transform forward
+  sgn = + 1.0;
+
+  //fft计算
+  cfft2( n, x, y, w, sgn );
+    
+  //输出结果
+  ereport(INFO,(errmsg("y=")));
+  for(i=0; i<2*n; i++){
+    ereport(INFO,(errmsg("%f,",y[i])));
+  }
+
+  //元素个数
+  ereport(INFO,(errmsg("  %12d", n)));
+  //运行时间
+  wtime = omp_get_wtime() - wtime;
+  ereport(INFO,(errmsg("  %12e\n", wtime)));
+
+  free(w);
+  free(x);
+  free(y);
+
+  //Terminate.
+  ereport(INFO,(errmsg("  Normal end of execution.\n")));
+  timestamp();
+
+  PG_RETURN_VOID();
+}
+
+int test_main(void)
+{
+  int i,n;
+  double sgn;
+  double *w;
+  double wtime;
+  double *x,*y,*z;
+
+  timestamp();
+
+  printf( "\n" );
+  printf( "  Number of processors available = %d\n", omp_get_num_procs ( ) );
+  printf( "  Number of threads =              %d\n", omp_get_max_threads ( ) );
+
+  //Prepare for tests.
+  printf( "\n" );
+  printf( "             N      Time\n" );
+  printf( "\n" );
+
+  n = 4;
   w = (double *) malloc(    n * sizeof(double));
   x = (double *) malloc(2 * n * sizeof(double));
   y = (double *) malloc(2 * n * sizeof(double));
@@ -313,210 +387,21 @@ int fft_main(void)
   }
   printf("\n");
 
+  //元素个数
   printf("  %12d", n);
-
+  //运行时间
   wtime = omp_get_wtime() - wtime;
   printf("  %12e\n", wtime);
 
   free(w);
   free(x);
   free(y);
-  // free ( z );
 
   //Terminate.
-  printf ( "\n" );
-  printf ( "FFT_OPENMP:\n" );
-  printf ( "  Normal end of execution.\n" );
-  printf ( "\n" );
-  timestamp();
-
-  return 0;
-}
-
-/* 
-  Purpose:
-    MAIN is the main program for FFT_OPENMP.
-
-  Discussion:
-    The "complex" vector A is actually stored as a double vector B.
-    The "complex" vector entry A[I] is stored as:
-      B[I*2+0], the real part,
-      B[I*2+1], the imaginary part.
-
-*/
-int test_main(void)
-{
-  double error;
-  int first;
-  double flops;
-  double fnm1;
-  int i,icase;
-  int it;
-  int ln2;
-  int ln2_max = 1;
-  double mflops = 0.0;
-  int n;
-  int nits = 10000;
-  int proc_num;
-  static double seed;
-  double sgn;
-  int thread_num;
-  double *w;
-  double wtime;
-  double *x,*y,*z;
-  double z0,z1;
-  int k;
-
-  timestamp ( );
-
-  printf ( "\n" );
-  printf ( "  Number of processors available = %d\n", omp_get_num_procs ( ) );
-  printf ( "  Number of threads =              %d\n", omp_get_max_threads ( ) );
-
-  //Prepare for tests.
-  printf ( "\n" );
-  printf ( "  Accuracy check:\n" );
-  printf ( "\n" );
-  printf ( "    FFT ( FFT ( X(1:N) ) ) == N * X(1:N)\n" );
-  printf ( "\n" );
-  printf ( "             N      NITS    Error         Time          Time/Call     MFLOPS\n" );
-  printf ( "\n" );
-
-  seed  = 331.0;
-  n = 2;
-  
-  //LN2 is the log base 2 of N.  Each increase of LN2 doubles N.
-  for( ln2 = 1; ln2 <= ln2_max; ln2++ )
-  {
-    n = 2 * n;
-/*
-  Allocate storage for the complex arrays W, X, Y, Z.  
-
-  We handle the complex arithmetic,
-  and store a complex number as a pair of doubles, a complex vector as a doubly
-  dimensioned array whose second dimension is 2. 
-*/
-    w = (double *) malloc(    n * sizeof(double));
-    x = (double *) malloc(2 * n * sizeof(double));
-    y = (double *) malloc(2 * n * sizeof(double));
-    z = (double *) malloc(2 * n * sizeof(double));
-
-    first = 1;
-
-    for( icase = 0; icase < 2; icase++ )
-    {
-      if( first )
-      {
-		/*
-        for( i = 0; i < 2 * n; i = i + 2 )
-        {
-          z0 = ggl( &seed );
-          z1 = ggl( &seed );
-          x[i] = z0;
-          //z[i] = z0;
-          x[i+1] = z1;
-          //z[i+1] = z1;
-        }
-		*/
-		x[0]=1.0; x[1]=0.0;
-		x[2]=2.0; x[3]=0.0;
-		x[4]=4.0; x[5]=0.0;
-		x[6]=3.0; x[7]=0.0;
-		printf("x=");
-		for(k=0; k<2*n; k++){
-			printf("%f,",x[k]);
-		}
-		printf("\n");
-      } 
-      else
-      {
-#pragma omp parallel \
-    shared ( n, x, z ) \
-    private ( i, z0, z1 )
-#pragma omp for nowait
-
-        for(i=0; i<2*n; i=i+2)
-        {
-          z0 = 0.0;              /* real part of array */
-          z1 = 0.0;              /* imaginary part of array */
-          x[i] = z0;
-          // z[i] = z0;           /* copy of initial real data */
-          x[i+1] = z1;
-          // z[i+1] = z1;         /* copy of initial imag. data */
-        }
-      }
-
-      //Initialize the sine and cosine tables.
-      cffti(n, w);
-
-      //Transform forward, back 
-      if( first )
-      {
-        sgn = + 1.0;
-        cfft2( n, x, y, w, sgn );
-        // sgn = - 1.0;
-        // cfft2( n, y, x, w, sgn );
-		
-		//输出结果
-		printf("y=");
-		for(k=0; k<2*n; k++){
-			printf("%f,",y[k]);
-		}
-		printf("\n");
-
-        //Results should be same as the initial data multiplied by N.
-        fnm1 = 1.0 / (double) n;
-        error = 0.0;
-        // for( i = 0; i < 2 * n; i = i + 2 )
-        // {
-        //   error = error 
-        //   + pow( z[i]   - fnm1 * x[i], 2 )
-        //   + pow( z[i+1] - fnm1 * x[i+1], 2 );
-        // }
-        // error = sqrt ( fnm1 * error );
-        printf( "  %12d  %8d  %12e", n, nits, error );
-        first = 0;
-      }
-      else
-      {
-        wtime = omp_get_wtime();
-        for ( it = 0; it < nits; it++ )
-        {
-          sgn = + 1.0;
-          cfft2 ( n, x, y, w, sgn );
-          // sgn = - 1.0;
-          // cfft2 ( n, y, x, w, sgn );
-        }
-        wtime = omp_get_wtime() - wtime;
-
-        // flops = 2.0 * (double) nits * ( 5.0 * (double) n * (double) ln2 );
-        // mflops = flops / 1.0E+06 / wtime;
-
-        printf("  %12e  %12e  %12f\n", wtime, wtime / (double) ( 2 * nits ), mflops );
-      }
-    }
-
-    if((ln2 % 4) == 0) 
-    {
-      nits = nits / 10;
-    }
-
-    if(nits < 1) 
-    {
-      nits = 1;
-    }
-
-    free(w);
-    free(x);
-    free(y);
-    // free ( z );
-  }
-
-  //Terminate.
-  printf ( "\n" );
-  printf ( "FFT_OPENMP:\n" );
-  printf ( "  Normal end of execution.\n" );
-  printf ( "\n" );
+  printf( "\n" );
+  printf( "FFT_OPENMP:\n" );
+  printf( "  Normal end of execution.\n" );
+  printf( "\n" );
   timestamp();
 
   return 0;

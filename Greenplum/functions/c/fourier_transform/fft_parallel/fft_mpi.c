@@ -276,6 +276,7 @@ fft_main(PG_FUNCTION_ARGS)
 		// 	exit(-1);
 		
 		/*
+		//一下从数据库表中读取数据
 		char *command="select val from test order by id";
 	    int ret;
 	    uint64 proc;
@@ -326,6 +327,7 @@ fft_main(PG_FUNCTION_ARGS)
 		SPI_finish();
 		*/
 
+		//测试数据
 		variableNum=4;
 		p[0].r = 1.0; p[0].i = 0.0;
 		p[1].r = 2.0; p[1].i = 0.0;
