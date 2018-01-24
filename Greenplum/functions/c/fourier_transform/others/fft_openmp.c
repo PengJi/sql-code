@@ -259,7 +259,7 @@ void timestamp ( void )
       B[I*2+1], the imaginary part.
 
 */
-int main ( void )
+int source_main ( void )
 {
   double error;
   int first;
@@ -420,6 +420,87 @@ int main ( void )
   printf ( "  Normal end of execution.\n" );
   printf ( "\n" );
   timestamp ( );
+
+  return 0;
+}
+
+int test_main(void)
+{
+  int i,n;
+  double sgn;
+  double *w;
+  double wtime;
+  double *x,*y,*z;
+
+  timestamp();
+
+  printf( "\n" );
+  printf( "  Number of processors available = %d\n", omp_get_num_procs ( ) );
+  printf( "  Number of threads =              %d\n", omp_get_max_threads ( ) );
+
+  //Prepare for tests.
+  printf( "\n" );
+  printf( "             N      Time\n" );
+  printf( "\n" );
+
+  n = 4;
+  w = (double *) malloc(    n * sizeof(double));
+  x = (double *) malloc(2 * n * sizeof(double));
+  y = (double *) malloc(2 * n * sizeof(double));
+  z = (double *) malloc(2 * n * sizeof(double));
+
+  //初始化数据
+  x[0]=1.0; x[1]=0.0;
+  x[2]=2.0; x[3]=0.0;
+  x[4]=4.0; x[5]=0.0;
+  x[6]=3.0; x[7]=0.0;
+
+  printf("x=");
+  for(i=0; i<2*n; i++){
+    printf("%f,",x[i]);
+  }
+  printf("\n");
+
+  //Initialize the sine and cosine tables.
+  cffti(n, w);
+
+  wtime = omp_get_wtime();
+
+  //Transform forward
+  sgn = + 1.0;
+
+  //fft计算
+  cfft2( n, x, y, w, sgn );
+    
+  //输出结果
+  printf("y=");
+  for(i=0; i<2*n; i++){
+    printf("%f,",y[i]);
+  }
+  printf("\n");
+
+  //元素个数
+  printf("  %12d", n);
+  //运行时间
+  wtime = omp_get_wtime() - wtime;
+  printf("  %12e\n", wtime);
+
+  free(w);
+  free(x);
+  free(y);
+
+  //Terminate.
+  printf( "\n" );
+  printf( "FFT_OPENMP:\n" );
+  printf( "  Normal end of execution.\n" );
+  printf( "\n" );
+  timestamp();
+
+  return 0;
+}
+
+int main(){
+  test_main();
 
   return 0;
 }
