@@ -370,16 +370,16 @@ int fft_main(void)
           cfft2( n, x, y, w, sgn );
         }
 
+        wtime = omp_get_wtime() - wtime;
+
+        printf("  %12e\n", wtime);
+
         //输出结果
-        printf("y=");
+        printf("\ny=");
         for(k=0; k<2*n; k++){
           printf("%f,",y[k]);
         }
         printf("\n");
-
-        wtime = omp_get_wtime() - wtime;
-
-        printf("  %12e\n", wtime);
       }
     }
 
