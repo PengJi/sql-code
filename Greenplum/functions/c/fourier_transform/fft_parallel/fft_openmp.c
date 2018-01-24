@@ -259,26 +259,11 @@ void timestamp( void )
 */
 int fft_main(void)
 {
-  double error;
-  int first;
-  double flops;
-  double fnm1;
-  int i,icase;
-  int it;
-  int ln2;
-  int ln2_max = 1;
-  double mflops = 0.0;
-  int n;
-  int nits = 10000;
-  int proc_num;
-  static double seed;
+  int i,n;
   double sgn;
-  int thread_num;
   double *w;
   double wtime;
   double *x,*y,*z;
-  double z0,z1;
-  int k;
 
   timestamp ( );
 
@@ -291,86 +276,52 @@ int fft_main(void)
   printf ( "             N      Time\n" );
   printf ( "\n" );
 
-  seed  = 331.0;
-  n = 2;
-  
-  //LN2 is the log base 2 of N.  Each increase of LN2 doubles N.
-  for( ln2 = 1; ln2 <= ln2_max; ln2++ )
-  {
-    n = 2 * n;
+  n = 4;
 
-    w = (double *) malloc(    n * sizeof(double));
-    x = (double *) malloc(2 * n * sizeof(double));
-    y = (double *) malloc(2 * n * sizeof(double));
-    z = (double *) malloc(2 * n * sizeof(double));
+  w = (double *) malloc(    n * sizeof(double));
+  x = (double *) malloc(2 * n * sizeof(double));
+  y = (double *) malloc(2 * n * sizeof(double));
+  z = (double *) malloc(2 * n * sizeof(double));
 
-    first = 1;
+  //初始化数据
+  x[0]=1.0; x[1]=0.0;
+  x[2]=2.0; x[3]=0.0;
+  x[4]=4.0; x[5]=0.0;
+  x[6]=3.0; x[7]=0.0;
 
-    for( icase = 0; icase < 2; icase++ )
-    {
-      if( first )
-      {
-        x[0]=1.0; x[1]=0.0;
-        x[2]=2.0; x[3]=0.0;
-        x[4]=4.0; x[5]=0.0;
-        x[6]=3.0; x[7]=0.0;
-        
-        printf("x=");
-        for(k=0; k<2*n; k++){
-          printf("%f,",x[k]);
-        }
-        printf("\n");
-      } 
-      else
-      {
-#pragma omp parallel \
-    shared ( n, x, z ) \
-    private ( i, z0, z1 )
-#pragma omp for nowait
-
-        for(i=0; i<2*n; i=i+2)
-        {
-          z0 = 0.0; // real part of array
-          z1 = 0.0; // imaginary part of array
-          x[i] = z0; // copy of initial real data
-          x[i+1] = z1; // copy of initial imag. data
-        }
-      }
-
-      //Initialize the sine and cosine tables.
-      cffti(n, w);
-
-      wtime = omp_get_wtime();
-
-      //Transform forward
-      sgn = + 1.0;
-
-      //fft计算
-      cfft2( n, x, y, w, sgn );
-    
-      //输出结果
-      printf("y=");
-      for(k=0; k<2*n; k++){
-        printf("%f,",y[k]);
-      }
-      printf("\n");
-
-      //Results should be same as the initial data multiplied by N.
-      fnm1 = 1.0 / (double) n;
-
-      printf("  %12d", n);
-      first = 0;
-
-      wtime = omp_get_wtime() - wtime;
-      printf("  %12e\n", wtime);
-
-    }
-
-    free(w);
-    free(x);
-    free(y);
-    // free ( z );
+  printf("x=");
+  for(i=0; i<2*n; i++){
+    printf("%f,",x[i]);
   }
+  printf("\n");
+
+  //Initialize the sine and cosine tables.
+  cffti(n, w);
+
+  wtime = omp_get_wtime();
+
+  //Transform forward
+  sgn = + 1.0;
+
+  //fft计算
+  cfft2( n, x, y, w, sgn );
+    
+  //输出结果
+  printf("y=");
+  for(i=0; i<2*n; i++){
+    printf("%f,",y[i]);
+  }
+  printf("\n");
+
+  printf("  %12d", n);
+
+  wtime = omp_get_wtime() - wtime;
+  printf("  %12e\n", wtime);
+
+  free(w);
+  free(x);
+  free(y);
+  // free ( z );
 
   //Terminate.
   printf ( "\n" );
