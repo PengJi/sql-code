@@ -267,7 +267,7 @@ int main(void)
   int it;
   int ln2;
   int ln2_max = 25;
-  double mflops;
+  double mflops = 0.0;
   int n;
   int nits = 10000;
   int proc_num;
@@ -276,11 +276,8 @@ int main(void)
   int thread_num;
   double *w;
   double wtime;
-  double *x;
-  double *y;
-  double *z;
-  double z0;
-  double z1;
+  double *x,*y,*z;
+  double z0,z1;
 
   timestamp ( );
   printf ( "\n" );
@@ -307,7 +304,7 @@ int main(void)
   n = 1;
   
   //LN2 is the log base 2 of N.  Each increase of LN2 doubles N.
-  for ( ln2 = 1; ln2 <= ln2_max; ln2++ )
+  for( ln2 = 1; ln2 <= ln2_max; ln2++ )
   {
     n = 2 * n;
 /*
@@ -324,11 +321,11 @@ int main(void)
 
     first = 1;
 
-    for ( icase = 0; icase < 2; icase++ )
+    for( icase = 0; icase < 2; icase++ )
     {
-      if ( first )
+      if( first )
       {
-        for ( i = 0; i < 2 * n; i = i + 2 )
+        for( i = 0; i < 2 * n; i = i + 2 )
         {
           z0 = ggl( &seed );
           z1 = ggl( &seed );
@@ -345,22 +342,22 @@ int main(void)
     private ( i, z0, z1 )
 #pragma omp for nowait
 
-        for ( i = 0; i < 2 * n; i = i + 2 )
+        for( i = 0; i < 2 * n; i = i + 2 )
         {
           z0 = 0.0;              /* real part of array */
           z1 = 0.0;              /* imaginary part of array */
           x[i] = z0;
-          z[i] = z0;           /* copy of initial real data */
+          // z[i] = z0;           /* copy of initial real data */
           x[i+1] = z1;
-          z[i+1] = z1;         /* copy of initial imag. data */
+          // z[i+1] = z1;         /* copy of initial imag. data */
         }
       }
 
       //Initialize the sine and cosine tables.
-      cffti( n, w );
+      cffti(n, w);
 
       //Transform forward, back 
-      if ( first )
+      if( first )
       {
         sgn = + 1.0;
         cfft2( n, x, y, w, sgn );
@@ -370,14 +367,14 @@ int main(void)
         //Results should be same as the initial data multiplied by N.
         fnm1 = 1.0 / (double) n;
         error = 0.0;
-        for ( i = 0; i < 2 * n; i = i + 2 )
-        {
-          error = error 
-          + pow( z[i]   - fnm1 * x[i], 2 )
-          + pow( z[i+1] - fnm1 * x[i+1], 2 );
-        }
-        error = sqrt ( fnm1 * error );
-        printf( "  %12d  %8d  %12e", n, nits, error );
+        // for( i = 0; i < 2 * n; i = i + 2 )
+        // {
+        //   error = error 
+        //   + pow( z[i]   - fnm1 * x[i], 2 )
+        //   + pow( z[i+1] - fnm1 * x[i+1], 2 );
+        // }
+        // error = sqrt ( fnm1 * error );
+        // printf( "  %12d  %8d  %12e", n, nits, error );
         first = 0;
       }
       else
@@ -392,8 +389,8 @@ int main(void)
         }
         wtime = omp_get_wtime() - wtime;
 
-        flops = 2.0 * (double) nits * ( 5.0 * (double) n * (double) ln2 );
-        mflops = flops / 1.0E+06 / wtime;
+        // flops = 2.0 * (double) nits * ( 5.0 * (double) n * (double) ln2 );
+        // mflops = flops / 1.0E+06 / wtime;
 
         printf("  %12e  %12e  %12f\n", wtime, wtime / (double) ( 2 * nits ), mflops );
       }
@@ -412,7 +409,7 @@ int main(void)
     free ( w );
     free ( x );
     free ( y );
-    free ( z );
+    // free ( z );
   }
 
   //Terminate.

@@ -279,11 +279,8 @@ int main ( void )
   int thread_num;
   double *w;
   double wtime;
-  double *x;
-  double *y;
-  double *z;
-  double z0;
-  double z1;
+  double *x,*y,*z;
+  double z0,z1;
 
   timestamp ( );
   printf ( "\n" );
@@ -398,9 +395,9 @@ int main ( void )
         flops = 2.0 * (double) nits 
           * ( 5.0 * (double) n * (double) ln2 );
 
-        mflops = flops / 1.0E+06 / wtime;
+        mflops = flops/1.0E+06/wtime;
 
-        printf( "  %12e  %12e  %12f\n", wtime, wtime / (double) ( 2 * nits ), mflops );
+        printf( "  %12e  %12e  %12f\n", wtime, wtime/(double) ( 2 * nits ), mflops );
       }
     }
     if ( ( ln2 % 4 ) == 0 ) 
