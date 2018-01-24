@@ -583,6 +583,8 @@ int source_main ( void )
   return 0;
 }
 
+/*
 int main(){
-  fft_main();
+  test_main();
 }
+*/
