@@ -69,8 +69,8 @@ void cfft2( int n, double x[], double y[], double w[], double sgn )
   int mj;
   int tgle;
 
-   m = ( int ) ( log ( ( double ) n ) / log ( 1.99 ) );
-   mj   = 1;
+  m = ( int ) ( log ( ( double ) n ) / log ( 1.99 ) );
+  mj   = 1;
 
   //Toggling switch for work array.
   tgle = 1;
