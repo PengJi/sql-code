@@ -266,7 +266,7 @@ int main(void)
   int i,icase;
   int it;
   int ln2;
-  int ln2_max = 25;
+  int ln2_max = 1;
   double mflops = 0.0;
   int n;
   int nits = 10000;
@@ -278,14 +278,9 @@ int main(void)
   double wtime;
   double *x,*y,*z;
   double z0,z1;
+  int k;
 
   timestamp ( );
-  printf ( "\n" );
-  printf ( "FFT_OPENMP\n" );
-  printf ( "  C/OpenMP version\n" );
-  printf ( "\n" );
-  printf ( "  Demonstrate an implementation of the Fast Fourier Transform\n" );
-  printf ( "  of a complex data vector, using OpenMP for parallel execution.\n" );
 
   printf ( "\n" );
   printf ( "  Number of processors available = %d\n", omp_get_num_procs ( ) );
@@ -301,7 +296,7 @@ int main(void)
   printf ( "\n" );
 
   seed  = 331.0;
-  n = 1;
+  n = 2;
   
   //LN2 is the log base 2 of N.  Each increase of LN2 doubles N.
   for( ln2 = 1; ln2 <= ln2_max; ln2++ )
@@ -314,10 +309,10 @@ int main(void)
   and store a complex number as a pair of doubles, a complex vector as a doubly
   dimensioned array whose second dimension is 2. 
 */
-	  w = ( double * ) malloc (     n * sizeof ( double ) );
-    x = ( double * ) malloc ( 2 * n * sizeof ( double ) );
-    y = ( double * ) malloc ( 2 * n * sizeof ( double ) );
-    z = ( double * ) malloc ( 2 * n * sizeof ( double ) );
+    w = (double *) malloc(    n * sizeof(double));
+    x = (double *) malloc(2 * n * sizeof(double));
+    y = (double *) malloc(2 * n * sizeof(double));
+    z = (double *) malloc(2 * n * sizeof(double));
 
     first = 1;
 
@@ -325,15 +320,26 @@ int main(void)
     {
       if( first )
       {
+		/*
         for( i = 0; i < 2 * n; i = i + 2 )
         {
           z0 = ggl( &seed );
           z1 = ggl( &seed );
           x[i] = z0;
-          z[i] = z0;
+          //z[i] = z0;
           x[i+1] = z1;
-          z[i+1] = z1;
+          //z[i+1] = z1;
         }
+		*/
+		x[0]=1.0; x[1]=0.0;
+		x[2]=2.0; x[3]=0.0;
+		x[4]=4.0; x[5]=0.0;
+		x[6]=3.0; x[7]=0.0;
+		printf("x=");
+		for(k=0; k<2*n; k++){
+			printf("%f,",x[k]);
+		}
+		printf("\n");
       } 
       else
       {
@@ -342,7 +348,7 @@ int main(void)
     private ( i, z0, z1 )
 #pragma omp for nowait
 
-        for( i = 0; i < 2 * n; i = i + 2 )
+        for(i=0; i<2*n; i=i+2)
         {
           z0 = 0.0;              /* real part of array */
           z1 = 0.0;              /* imaginary part of array */
@@ -363,6 +369,13 @@ int main(void)
         cfft2( n, x, y, w, sgn );
         // sgn = - 1.0;
         // cfft2( n, y, x, w, sgn );
+		
+		//输出结果
+		printf("y=");
+		for(k=0; k<2*n; k++){
+			printf("%f,",y[k]);
+		}
+		printf("\n");
 
         //Results should be same as the initial data multiplied by N.
         fnm1 = 1.0 / (double) n;
@@ -374,7 +387,7 @@ int main(void)
         //   + pow( z[i+1] - fnm1 * x[i+1], 2 );
         // }
         // error = sqrt ( fnm1 * error );
-        // printf( "  %12d  %8d  %12e", n, nits, error );
+        printf( "  %12d  %8d  %12e", n, nits, error );
         first = 0;
       }
       else
@@ -396,19 +409,19 @@ int main(void)
       }
     }
 
-    if( ( ln2 % 4 ) == 0 ) 
+    if((ln2 % 4) == 0) 
     {
       nits = nits / 10;
     }
 
-    if( nits < 1 ) 
+    if(nits < 1) 
     {
       nits = 1;
     }
 
-    free ( w );
-    free ( x );
-    free ( y );
+    free(w);
+    free(x);
+    free(y);
     // free ( z );
   }
 
