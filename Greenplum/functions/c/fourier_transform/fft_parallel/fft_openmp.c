@@ -257,7 +257,170 @@ void timestamp( void )
       B[I*2+1], the imaginary part.
 
 */
-int main(void)
+int fft_main(void)
+{
+  double error;
+  int first;
+  double flops;
+  double fnm1;
+  int i,icase;
+  int it;
+  int ln2;
+  int ln2_max = 1;
+  double mflops = 0.0;
+  int n;
+  int nits = 10000;
+  int proc_num;
+  static double seed;
+  double sgn;
+  int thread_num;
+  double *w;
+  double wtime;
+  double *x,*y,*z;
+  double z0,z1;
+  int k;
+
+  timestamp ( );
+
+  printf ( "\n" );
+  printf ( "  Number of processors available = %d\n", omp_get_num_procs ( ) );
+  printf ( "  Number of threads =              %d\n", omp_get_max_threads ( ) );
+
+  //Prepare for tests.
+  printf ( "\n" );
+  printf ( "             N      NITS    Time\n" );
+  printf ( "\n" );
+
+  seed  = 331.0;
+  n = 2;
+  
+  //LN2 is the log base 2 of N.  Each increase of LN2 doubles N.
+  for( ln2 = 1; ln2 <= ln2_max; ln2++ )
+  {
+    n = 2 * n;
+
+    w = (double *) malloc(    n * sizeof(double));
+    x = (double *) malloc(2 * n * sizeof(double));
+    y = (double *) malloc(2 * n * sizeof(double));
+    z = (double *) malloc(2 * n * sizeof(double));
+
+    first = 1;
+
+    for( icase = 0; icase < 2; icase++ )
+    {
+      if( first )
+      {
+        x[0]=1.0; x[1]=0.0;
+        x[2]=2.0; x[3]=0.0;
+        x[4]=4.0; x[5]=0.0;
+        x[6]=3.0; x[7]=0.0;
+        printf("x=");
+        for(k=0; k<2*n; k++){
+          printf("%f,",x[k]);
+        }
+        printf("\n");
+      } 
+      else
+      {
+#pragma omp parallel \
+    shared ( n, x, z ) \
+    private ( i, z0, z1 )
+#pragma omp for nowait
+
+        for(i=0; i<2*n; i=i+2)
+        {
+          z0 = 0.0; // real part of array
+          z1 = 0.0; // imaginary part of array
+          x[i] = z0; // copy of initial real data
+          x[i+1] = z1; // copy of initial imag. data
+        }
+      }
+
+      //Initialize the sine and cosine tables.
+      cffti(n, w);
+
+      //Transform forward, back 
+      if( first )
+      {
+        sgn = + 1.0;
+
+        //fft计算
+        cfft2( n, x, y, w, sgn );
+    
+        //输出结果
+        printf("y=");
+        for(k=0; k<2*n; k++){
+          printf("%f,",y[k]);
+        }
+        printf("\n");
+
+        //Results should be same as the initial data multiplied by N.
+        fnm1 = 1.0 / (double) n;
+
+        printf( "  %12d  %8d", n, nits);
+        first = 0;
+      }
+      else
+      {
+        wtime = omp_get_wtime();
+
+        for ( it = 0; it < nits; it++ )
+        {
+          sgn = + 1.0;
+          cfft2( n, x, y, w, sgn );
+        }
+
+        //输出结果
+        printf("y=");
+        for(k=0; k<2*n; k++){
+          printf("%f,",y[k]);
+        }
+        printf("\n");
+
+        wtime = omp_get_wtime() - wtime;
+
+        printf("  %12e\n", wtime);
+      }
+    }
+
+    if((ln2 % 4) == 0) 
+    {
+      nits = nits / 10;
+    }
+
+    if(nits < 1) 
+    {
+      nits = 1;
+    }
+
+    free(w);
+    free(x);
+    free(y);
+    // free ( z );
+  }
+
+  //Terminate.
+  printf ( "\n" );
+  printf ( "FFT_OPENMP:\n" );
+  printf ( "  Normal end of execution.\n" );
+  printf ( "\n" );
+  timestamp();
+
+  return 0;
+}
+
+/* 
+  Purpose:
+    MAIN is the main program for FFT_OPENMP.
+
+  Discussion:
+    The "complex" vector A is actually stored as a double vector B.
+    The "complex" vector entry A[I] is stored as:
+      B[I*2+0], the real part,
+      B[I*2+1], the imaginary part.
+
+*/
+int test_main(void)
 {
   double error;
   int first;
@@ -433,4 +596,8 @@ int main(void)
   timestamp();
 
   return 0;
+}
+
+int main(){
+  fft_main();
 }
