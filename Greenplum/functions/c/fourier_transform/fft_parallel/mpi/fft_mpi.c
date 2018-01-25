@@ -263,6 +263,7 @@ Datum
 fft_main(PG_FUNCTION_ARGS)
 {
 	int rank,size,i;
+	int32 arg = PG_GETARG_INT32(0);
 
 	MPI_Init(NULL,NULL);
 	MPI_Comm_rank(MPI_COMM_WORLD,&rank);
@@ -417,4 +418,6 @@ fft_main(PG_FUNCTION_ARGS)
 	}
 
 	MPI_Finalize();
+
+	PG_RETURN_INT32(arg);
 }
