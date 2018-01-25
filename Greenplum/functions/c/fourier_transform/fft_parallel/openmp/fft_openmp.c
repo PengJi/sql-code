@@ -274,6 +274,7 @@ fft_main(PG_FUNCTION_ARGS)
   double *w;
   double wtime;
   double *x,*y,*z;
+  int32 arg = PG_GETARG_INT32(0);
 
   timestamp();
 
@@ -331,5 +332,5 @@ fft_main(PG_FUNCTION_ARGS)
   ereport(INFO,(errmsg("  Normal end of execution.\n")));
   timestamp();
 
-  PG_RETURN_INT32(0);
+  PG_RETURN_INT32(arg);
 }
