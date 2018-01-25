@@ -4,11 +4,11 @@ SRC_FFT = fft_openmp.c
 
 #all: fft.so
 
-fft.so: $(SRC_FFT)
+fft_openmp.so: $(SRC_FFT)
 	gcc $(CXXFLAGS) -fpic -fopenmp -c $^
 	gcc $(LDFLAGS) -shared -o $@ *.o
 
 .PHONY: clean
 clean :
-	rm -f *.o fft.so
+	rm -f *.o *.so
 
