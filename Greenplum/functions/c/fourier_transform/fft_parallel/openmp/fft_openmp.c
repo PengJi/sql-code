@@ -13,7 +13,9 @@
 #include "utils/builtins.h"
 #include "executor/spi.h"
 
+#ifdef PG_MODULE_MAGIC
 PG_MODULE_MAGIC;
+#endif
 
 int main( void );
 void ccopy( int n, double x[], double y[] );
@@ -329,5 +331,5 @@ fft_main(PG_FUNCTION_ARGS)
   ereport(INFO,(errmsg("  Normal end of execution.\n")));
   timestamp();
 
-  PG_RETURN_VOID();
+  PG_RETURN_INT32(0);
 }
