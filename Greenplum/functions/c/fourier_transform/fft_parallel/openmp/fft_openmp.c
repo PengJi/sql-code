@@ -55,63 +55,6 @@ void ccopy( int n, double x[], double y[] )
 
 /*
   Purpose:
-    CFFT2 performs a complex Fast Fourier Transform.
-
-  Parameters:
-    Input, int N, the size of the array to be transformed.
-    Input/output, double X[2*N], the data to be transformed. On output, the contents of X have been overwritten by work information.
-    Output, double Y[2*N], the forward or backward FFT of X.
-    Input, double W[N], a table of sines and cosines.
-    Input, double SGN, is +1 for a "forward" FFT and -1 for a "backward" FFT.
-*/
-void cfft2( int n, double x[], double y[], double w[], double sgn )
-{
-  int j;
-  int m;
-  int mj;
-  int tgle;
-
-  m = ( int ) ( log ( ( double ) n ) / log ( 1.99 ) );
-  mj   = 1;
-
-  //Toggling switch for work array.
-  tgle = 1;
-  step( n, mj, &x[0*2+0], &x[(n/2)*2+0], &y[0*2+0], &y[mj*2+0], w, sgn );
-
-  if( n == 2 )
-  {
-    return;
-  }
-
-  for( j = 0; j < m - 2; j++ )
-  {
-    mj = mj * 2;
-    if( tgle )
-    {
-      step( n, mj, &y[0*2+0], &y[(n/2)*2+0], &x[0*2+0], &x[mj*2+0], w, sgn );
-      tgle = 0;
-    }
-    else
-    {
-      step ( n, mj, &x[0*2+0], &x[(n/2)*2+0], &y[0*2+0], &y[mj*2+0], w, sgn );
-      tgle = 1;
-    }
-  }
-
-  //Last pass through data: move Y to X if needed.
-  if( tgle ) 
-  {
-    ccopy( n, y, x );
-  }
-
-  mj = n / 2;
-  step( n, mj, &x[0*2+0], &x[(n/2)*2+0], &y[0*2+0], &y[mj*2+0], w, sgn );
-
-  return;
-}
-
-/*
-  Purpose:
     CFFTI sets up sine and cosine tables needed for the FFT calculation.
 
   Parameters:
@@ -168,6 +111,7 @@ double ggl(double *seed)
 /*
   Purpose:
     STEP carries out one step of the workspace version of CFFT2.
+    单节点并行
 
   Parameters:
 
@@ -196,7 +140,7 @@ void step( int n, int mj, double a[], double b[], double c[],
     private ( ambr, ambu, j, ja, jb, jc, jd, jw, k, wjw )
 #pragma omp for nowait
 
-  for( j = 0; j < lj; j++ )
+  for(j = 0; j < lj; j++)
   {
     jw = j * mj;
     ja  = jw;
@@ -207,12 +151,12 @@ void step( int n, int mj, double a[], double b[], double c[],
     wjw[0] = w[jw*2+0]; 
     wjw[1] = w[jw*2+1];
 
-    if( sgn < 0.0 ) 
+    if(sgn < 0.0) 
     {
       wjw[1] = - wjw[1];
     }
 
-    for( k = 0; k < mj; k++ )
+    for(k = 0; k < mj; k++)
     {
       c[(jc+k)*2+0] = a[(ja+k)*2+0] + b[(jb+k)*2+0];
       c[(jc+k)*2+1] = a[(ja+k)*2+1] + b[(jb+k)*2+1];
@@ -224,6 +168,64 @@ void step( int n, int mj, double a[], double b[], double c[],
       d[(jd+k)*2+1] = wjw[1] * ambr + wjw[0] * ambu;
     }
   }
+  return;
+}
+
+/*
+  Purpose:
+    CFFT2 performs a complex Fast Fourier Transform.
+    分布式并行
+
+  Parameters:
+    Input, int N, the size of the array to be transformed.
+    Input/output, double X[2*N], the data to be transformed. On output, the contents of X have been overwritten by work information.
+    Output, double Y[2*N], the forward or backward FFT of X.
+    Input, double W[N], a table of sines and cosines.
+    Input, double SGN, is +1 for a "forward" FFT and -1 for a "backward" FFT.
+*/
+void cfft2( int n, double x[], double y[], double w[], double sgn )
+{
+  int j;
+  int m;
+  int mj;
+  int tgle;
+
+  m = (int) (log((double)n) / log(1.99) );
+  mj   = 1;
+
+  //Toggling switch for work array.
+  tgle = 1;
+  step( n, mj, &x[0*2+0], &x[(n/2)*2+0], &y[0*2+0], &y[mj*2+0], w, sgn );
+
+  if(n == 2)
+  {
+    return;
+  }
+
+  for( j = 0; j < m - 2; j++ )
+  {
+    mj = mj * 2;
+    if( tgle )
+    {
+      step(n, mj, &y[0*2+0], &y[(n/2)*2+0], &x[0*2+0], &x[mj*2+0], w, sgn);
+      tgle = 0;
+    }
+    else
+    {
+      step(n, mj, &x[0*2+0], &x[(n/2)*2+0], &y[0*2+0], &y[mj*2+0], w, sgn);
+      tgle = 1;
+    }
+  }
+
+  //Last pass through data: move Y to X if needed.
+  if( tgle ) 
+  {
+    ccopy(n, y, x);
+  }
+
+  mj = n / 2;
+  step( n, mj, &x[0*2+0], &x[(n/2)*2+0], &y[0*2+0], &y[mj*2+0], w, sgn );
+
   return;
 }
 
@@ -263,7 +265,6 @@ void timestamp( void )
     The "complex" vector entry A[I] is stored as:
       B[I*2+0], the real part,
       B[I*2+1], the imaginary part.
-
 */
 PG_FUNCTION_INFO_V1(fft_main);
 Datum 
