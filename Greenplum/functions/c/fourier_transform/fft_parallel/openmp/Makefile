@@ -1,5 +1,5 @@
-CXXFLAGS=-I/home/gpdba/greenplum/include/postgresql/server
-LDFLAGS=-lm
+CXXFLAGS = -I/home/gpdba/greenplum/include/postgresql/server
+LDFLAGS = -lm
 SRC_FFT = fft_openmp.c
 
 #all: fft.so
