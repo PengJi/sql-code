@@ -1,11 +1,12 @@
 CXXFLAGS = -I/home/gpdba/greenplum/include/postgresql/server
 LDFLAGS = -lm
-SRC_FFT = fft_openmp.c
+#SRC_FFT = fft_openmp.c
+SRC_FFT = hello.c
 
 #all: fft.so
 
 fft_openmp.so: $(SRC_FFT)
-	gcc $(CXXFLAGS) -fpic -fopenmp -c $^
+	gcc $(CXXFLAGS) -fpic -fopenmp -c $^  -lgomp
 	gcc $(LDFLAGS) -shared -o $@ *.o
 
 .PHONY: clean
