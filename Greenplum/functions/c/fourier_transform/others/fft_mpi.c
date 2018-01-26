@@ -32,6 +32,19 @@ int variableNum;
 double transTime=0,totalTime=0,beginTime;
 MPI_Status status;
 
+void comp_add(complex_t* result,const complex_t* c1,const complex_t* c2);
+void comp_multiply(complex_t* result,const complex_t* c1,const complex_t* c2);
+void shuffle(complex_t* f, int beginPos, int endPos);
+void evaluate(complex_t* f, int beginPos, int endPos,const complex_t* x, complex_t* y,
+int leftPos, int rightPos, int totalLength);
+void print(const complex_t* f, int fLength);
+void myprint(const complex_t* f, int fLength);
+void printres(const complex_t* f,int fLength);
+void addTransTime(double toAdd);
+BOOL readFromFile();
+void sendOrigData(int size);
+void recvOrigData();
+
 void comp_add(complex_t* result,const complex_t* c1,const complex_t* c2)
 {
     result->r=c1->r+c2->r;
@@ -349,7 +362,7 @@ int main(int argc,char * argv[])
 	evaluate(p,0,variableNum-1,w,s,startPos,stopPos,wLength);
 	
 	printf("partial results, process %d.\n",rank);	
-	myprint(s,wLength);
+	myprint(s,wLength); // 输出每个进程的结果
 	
 	// 各个进程都把s中自己负责计算出来的部分发送给进程0，并从进程0接收汇总的s
 	if(rank>0)
