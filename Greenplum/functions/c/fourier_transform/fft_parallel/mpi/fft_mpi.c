@@ -367,10 +367,11 @@ fft_main(PG_FUNCTION_ARGS)
 	}
 
 	// 划分各个进程的工作范围 startPos ~ stopPos
-	int everageLength=wLength/size;
-	int moreLength=wLength%size;
-	int startPos=moreLength+rank*everageLength;
-	int stopPos=startPos+everageLength-1;
+	int everageLength=wLength/size; // 8/4=2
+	int moreLength=wLength%size; // 8%4=0
+	int startPos=moreLength+rank*everageLength; // 0+0*2=0; 0+1*2=1; 0+2*2=4; 0+3*2=6
+	int stopPos=startPos+everageLength-1; // 0+2-1=1; 1+2-1=2; 4+2-1=5; 6+2-1=7
+	//片段: [0,1], [1,2], [4,5], [6,7]
 
 	if(rank==0)
 	{
@@ -390,15 +391,17 @@ fft_main(PG_FUNCTION_ARGS)
 		MPI_Send(s+startPos,everageLength*2,MPI_DOUBLE,0,S_TAG,MPI_COMM_WORLD);
 		MPI_Recv(s,wLength*2,MPI_DOUBLE,0,S_TAG2,MPI_COMM_WORLD,&status);
 	}
-	else // 进程0接收s片断，向其余进程发送完整的s
+	else // 进程0接收s片段，向其余进程发送完整的s
 	{
 		double tempTime=MPI_Wtime();
 
+		// 进程0接收s片段
 		for(i=1;i<size;i++)
 		{
 			MPI_Recv(s+moreLength+i*everageLength,everageLength*2,MPI_DOUBLE,i,S_TAG,MPI_COMM_WORLD,&status);
 		}
 
+		//向其余进程发送完整的结果s
 		for(i=1;i<size;i++)
 		{
 			MPI_Send(s,wLength*2,MPI_DOUBLE,i,S_TAG2,MPI_COMM_WORLD);

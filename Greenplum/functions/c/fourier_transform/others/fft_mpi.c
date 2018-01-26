@@ -89,8 +89,7 @@ void shuffle(complex_t* f, int beginPos, int endPos)
  * 			rightPos : 所负责计算输出的y的片断的终止下标
  * 			totalLength : y的长度
  */
-void evaluate(complex_t* f, int beginPos, int endPos,
-const complex_t* x, complex_t* y,
+void evaluate(complex_t* f, int beginPos, int endPos,const complex_t* x, complex_t* y,
 int leftPos, int rightPos, int totalLength)
 {
     int i;
@@ -334,15 +333,16 @@ int main(int argc,char * argv[])
 	}
 
 	// 划分各个进程的工作范围 startPos ~ stopPos
-	int everageLength=wLength/size;
-	int moreLength=wLength%size;
-	int startPos=moreLength+rank*everageLength;
-	int stopPos=startPos+everageLength-1;
+	int everageLength=wLength/size; // 8/2=4 (假设有两个进程)
+	int moreLength=wLength%size; // 8%2=0
+	int startPos=moreLength+rank*everageLength; // 0+0*4=0; 0+1*4=4;
+	int stopPos=startPos+everageLength-1; // 0+4-1=3; 4+4-1=7;
+	//[0,1,2,3,4,5,6,7], 片段: [0,3], [4,7]
 
 	if(rank==0)
 	{
-		startPos=0;
-		stopPos=moreLength+everageLength-1;
+		startPos=0; // 0
+		stopPos=moreLength+everageLength-1; // 0+4-1=3
 	}
 
     // 对p作FFT，输出序列为s，每个进程仅负责计算出序列中位置为startPos 到 stopPos的元素
@@ -357,22 +357,24 @@ int main(int argc,char * argv[])
 		MPI_Send(s+startPos,everageLength*2,MPI_DOUBLE,0,S_TAG,MPI_COMM_WORLD);
 		MPI_Recv(s,wLength*2,MPI_DOUBLE,0,S_TAG2,MPI_COMM_WORLD,&status);
 	}
-	else // 进程0接收s片断，向其余进程发送完整的s
+	else // 进程0接收s片段，向其余进程发送完整的s
 	{
 		double tempTime=MPI_Wtime();
 
+		// 进程0接收s片段
 		for(i=1;i<size;i++)
 		{
 			MPI_Recv(s+moreLength+i*everageLength,everageLength*2,MPI_DOUBLE,i,S_TAG,MPI_COMM_WORLD,&status);
 		}
 
+		//进程0向其余进程发送完整的结果s	
 		for(i=1;i<size;i++)
 		{
 			MPI_Send(s,wLength*2,MPI_DOUBLE,i,S_TAG2,MPI_COMM_WORLD);
 		}
 
 		printf("The final results :\n");
-		printres(s,wLength);
+		printres(s,wLength); //结果占s一半空间
 
 		addTransTime(MPI_Wtime()-tempTime);
 	}
