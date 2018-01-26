@@ -71,7 +71,7 @@ void cffti( int n, double w[] )
     private ( arg, i )
 #pragma omp for nowait
 
-  for ( i = 0; i < n2; i++ )
+  for( i = 0; i < n2; i++ )
   {
     arg = aw * ( ( double ) i );
     w[i*2+0] = cos ( arg );

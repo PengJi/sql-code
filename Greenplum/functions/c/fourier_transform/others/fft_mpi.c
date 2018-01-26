@@ -58,102 +58,6 @@ void comp_multiply(complex_t* result,const complex_t* c1,const complex_t* c2)
 }
 
 /*
- * Function:    shuffle
- * Description: 移动f中从beginPos到endPos位置的元素，使之按位置奇偶
- *              重新排列。举例说明:假设数组f，beginPos=2, endPos=5
- *              则shuffle函数的运行结果为f[2..5]重新排列，排列后各个
- *              位置对应的原f的元素为: f[2],f[4],f[3],f[5]
- * Parameters:  f为被操作数组首地址
- *              beginPos, endPos为操作的下标范围
- */
-void shuffle(complex_t* f, int beginPos, int endPos)
-{
-    int i;
-    complex_t temp[2*MAX_N];
-
-    for(i = beginPos; i <= endPos; i ++)
-    {
-        temp[i] = f[i];
-    }
-
-    int j = beginPos;
-    for(i = beginPos; i <= endPos; i +=2)
-    {
-        f[j] = temp[i];
-        j++;
-    }
-    for(i = beginPos +1; i <= endPos; i += 2)
-    {
-        f[j] = temp[i];
-        j++;
-    }
-}
-
-/*
- * Function:		evaluate
- * Description:	对复数序列f进行FFT或者IFFT(由x决定)，结果序列为y，
- * 			产生leftPos 到 rightPos之间的结果元素
- * Parameters:	f : 原始序列数组首地址
- * 			beginPos : 原始序列在数组f中的第一个下标
- * 			endPos : 原始序列在数组f中的最后一个下标
- * 			x : 存放单位根的数组，其元素为w,w^2,w^3...
- * 			y : 输出序列
- * 			leftPos : 所负责计算输出的y的片断的起始下标
- * 			rightPos : 所负责计算输出的y的片断的终止下标
- * 			totalLength : y的长度
- */
-void evaluate(complex_t* f, int beginPos, int endPos,const complex_t* x, complex_t* y,
-int leftPos, int rightPos, int totalLength)
-{
-    int i;
-    if ((beginPos > endPos)||(leftPos > rightPos))
-    {
-        printf("Error in use Polynomial!\n");
-        exit(-1);
-    }
-    else if(beginPos == endPos)
-    {
-        for(i = leftPos; i <= rightPos; i ++)
-        {
-            y[i] = f[beginPos];
-        }
-    }
-    else if(beginPos + 1 == endPos)
-    {
-        for(i = leftPos; i <= rightPos; i ++)
-        {
-            complex_t temp;
-            comp_multiply(&temp, &f[endPos], &x[i]);
-            comp_add(&y[i], &f[beginPos], &temp);
-        }
-    }
-    else
-    {
-        complex_t tempX[2*MAX_N],tempY1[2*MAX_N], tempY2[2*MAX_N];
-        int midPos = (beginPos + endPos)/2;
-
-        shuffle(f, beginPos, endPos);
-
-        for(i = leftPos; i <= rightPos; i ++)
-        {
-            comp_multiply(&tempX[i], &x[i], &x[i]);
-        }
-
-        evaluate(f, beginPos, midPos, tempX, tempY1,
-            leftPos, rightPos, totalLength);
-        evaluate(f, midPos+1, endPos, tempX, tempY2,
-            leftPos, rightPos, totalLength);
-
-        for(i = leftPos; i <= rightPos; i ++)
-        {
-            complex_t temp;
-            comp_multiply(&temp, &x[i], &tempY2[i]);
-            comp_add(&y[i], &tempY1[i], &temp);
-        }
-    }
-}
-
-/*
  * Function:    print
  * Description: 打印数组元素的实部
  * Parameters:  f为待打印数组的首地址
@@ -300,6 +204,102 @@ void recvOrigData()
 {
 	MPI_Recv(&variableNum,1,MPI_INT,0,V_TAG,MPI_COMM_WORLD,&status);
 	MPI_Recv(p, variableNum * 2, MPI_DOUBLE, 0, P_TAG, MPI_COMM_WORLD, &status);
+}
+
+/*
+ * Function:    shuffle
+ * Description: 移动f中从beginPos到endPos位置的元素，使之按位置奇偶
+ *              重新排列。举例说明:假设数组f，beginPos=2, endPos=5
+ *              则shuffle函数的运行结果为f[2..5]重新排列，排列后各个
+ *              位置对应的原f的元素为: f[2],f[4],f[3],f[5]
+ * Parameters:  f为被操作数组首地址
+ *              beginPos, endPos为操作的下标范围
+ */
+void shuffle(complex_t* f, int beginPos, int endPos)
+{
+    int i;
+    complex_t temp[2*MAX_N];
+
+    for(i = beginPos; i <= endPos; i ++)
+    {
+        temp[i] = f[i];
+    }
+
+    int j = beginPos;
+    for(i = beginPos; i <= endPos; i +=2)
+    {
+        f[j] = temp[i];
+        j++;
+    }
+    for(i = beginPos +1; i <= endPos; i += 2)
+    {
+        f[j] = temp[i];
+        j++;
+    }
+}
+
+/*
+ * Function:		evaluate
+ * Description:	对复数序列f进行FFT或者IFFT(由x决定)，结果序列为y，
+ * 			产生leftPos 到 rightPos之间的结果元素
+ * Parameters:	f : 原始序列数组首地址
+ * 			beginPos : 原始序列在数组f中的第一个下标
+ * 			endPos : 原始序列在数组f中的最后一个下标
+ * 			x : 存放单位根的数组，其元素为w,w^2,w^3...
+ * 			y : 输出序列
+ * 			leftPos : 所负责计算输出的y的片断的起始下标
+ * 			rightPos : 所负责计算输出的y的片断的终止下标
+ * 			totalLength : y的长度
+ */
+void evaluate(complex_t* f, int beginPos, int endPos,const complex_t* x, complex_t* y,
+int leftPos, int rightPos, int totalLength)
+{
+    int i;
+    if ((beginPos > endPos)||(leftPos > rightPos))
+    {
+        printf("Error in use Polynomial!\n");
+        exit(-1);
+    }
+    else if(beginPos == endPos)
+    {
+        for(i = leftPos; i <= rightPos; i ++)
+        {
+            y[i] = f[beginPos];
+        }
+    }
+    else if(beginPos + 1 == endPos)
+    {
+        for(i = leftPos; i <= rightPos; i ++)
+        {
+            complex_t temp;
+            comp_multiply(&temp, &f[endPos], &x[i]);
+            comp_add(&y[i], &f[beginPos], &temp);
+        }
+    }
+    else
+    {
+        complex_t tempX[2*MAX_N],tempY1[2*MAX_N], tempY2[2*MAX_N];
+        int midPos = (beginPos + endPos)/2;
+
+        shuffle(f, beginPos, endPos);
+
+        for(i = leftPos; i <= rightPos; i ++)
+        {
+            comp_multiply(&tempX[i], &x[i], &x[i]);
+        }
+
+        evaluate(f, beginPos, midPos, tempX, tempY1,
+            leftPos, rightPos, totalLength);
+        evaluate(f, midPos+1, endPos, tempX, tempY2,
+            leftPos, rightPos, totalLength);
+
+        for(i = leftPos; i <= rightPos; i ++)
+        {
+            complex_t temp;
+            comp_multiply(&temp, &x[i], &tempY2[i]);
+            comp_add(&y[i], &tempY1[i], &temp);
+        }
+    }
 }
 
 int main(int argc,char * argv[])
