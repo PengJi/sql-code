@@ -239,7 +239,9 @@ void sendOrigData(int size)
 
 	for(i=1;i<size;i++)
 	{
+		//向所有进程发送数据的总个数
 		MPI_Send(&variableNum,1,MPI_INT,i,V_TAG,MPI_COMM_WORLD);
+		//向所有进程发送数据
 		MPI_Send(p, variableNum * 2, MPI_DOUBLE, i, P_TAG, MPI_COMM_WORLD);
 	}
 
@@ -247,11 +249,13 @@ void sendOrigData(int size)
 
 /*
  * Function:    recvOrigData
- * Description:	接受原始数据
+ * Description:	接受原始数据，从进程0接收消息
  */
 void recvOrigData()
 {
+	//从进程0接收数据的总个数
 	MPI_Recv(&variableNum,1,MPI_INT,0,V_TAG,MPI_COMM_WORLD,&status);
+	//从进程0接收所有的数据
 	MPI_Recv(p, variableNum * 2, MPI_DOUBLE, 0, P_TAG, MPI_COMM_WORLD, &status);
 }
 
