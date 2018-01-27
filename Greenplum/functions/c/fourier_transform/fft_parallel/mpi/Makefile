@@ -1,6 +1,7 @@
 CXXFLAGS = -I/home/gpdba/greenplum/include/postgresql/server
 LDFLAGS = -lm
 SRC_FFT = fft_mpi.c
+#SRC_FFT = fft_mpi1.c
 
 #all:test.fft
 

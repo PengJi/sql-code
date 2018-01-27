@@ -1,4 +1,4 @@
-create or replace function fft(integer)
+create or replace function fft_mpi(integer)
 returns int
 as '/home/gpdba/sql_prac/Greenplum/functions/c/fourier_transform/fft_parallel/mpi/fft_mpi', 'fft_main'
 language c strict;
