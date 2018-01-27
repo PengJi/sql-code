@@ -1,1 +1,1 @@
-drop function fft(integer);
+drop function fft_openmp(integer);

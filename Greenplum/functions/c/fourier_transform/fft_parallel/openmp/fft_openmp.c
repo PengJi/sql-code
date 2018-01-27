@@ -1,7 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <time.h>
 #include <omp.h>
 
 #include "postgres.h"
@@ -76,7 +72,6 @@ void cffti( int n, double w[] )
     shared ( aw, n, w ) \
     private ( arg, i )
 #pragma omp for nowait
-
   for( i = 0; i < n2; i++ )
   {
     arg = aw * ( ( double ) i );
@@ -139,7 +134,6 @@ void step( int n, int mj, double a[], double b[], double c[],
     shared ( a, b, c, d, lj, mj, mj2, sgn, w ) \
     private ( ambr, ambu, j, ja, jb, jc, jd, jw, k, wjw )
 #pragma omp for nowait
-
   for(j = 0; j < lj; j++)
   {
     jw = j * mj;
