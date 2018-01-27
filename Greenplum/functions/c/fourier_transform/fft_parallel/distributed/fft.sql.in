@@ -1,0 +1,4 @@
+create or replace function hello(integer)
+returns int
+as '/home/gpdba/sql_prac/Greenplum/functions/c/fourier_transform/fft_parallel/distributed/fft', 'hello'
+language c strict;
