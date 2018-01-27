@@ -6,8 +6,8 @@ SRC_FFT = hello.c
 #all: fft.so
 
 fft_openmp.so: $(SRC_FFT)
-	gcc $(CXXFLAGS) -fpic -fopenmp -c $^  -lgomp
-	gcc $(LDFLAGS) -shared -o $@ *.o
+	gcc $(CXXFLAGS) -fpic -c $^
+	gcc $(LDFLAGS) -shared -fopenmp -o $@ *.o
 
 .PHONY: clean
 clean :

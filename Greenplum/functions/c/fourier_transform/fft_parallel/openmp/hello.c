@@ -12,11 +12,26 @@ Datum
 hello(PG_FUNCTION_ARGS)
 {
 	int32 arg = PG_GETARG_INT32(0);
-	int num = omp_get_num_procs();
 
-//#pragma omp parallel  
+	int num_procs = omp_get_num_procs();
+    ereport(INFO,(errmsg("%d",num_procs)));
+
+	int max_threads = omp_get_max_threads();
+	ereport(INFO,(errmsg("%d",max_threads)));
+
+#pragma omp task
     {
-        ereport(INFO,(errmsg("hello")));
+        ereport(INFO,(errmsg("task")));
+    }
+
+#pragma omp parallel
+	{
+		ereport(INFO,(errmsg("parallel")));
+	}
+
+#pragma omp task
+    {
+        ereport(INFO,(errmsg("task")));
     }
 
     PG_RETURN_INT32(arg);
