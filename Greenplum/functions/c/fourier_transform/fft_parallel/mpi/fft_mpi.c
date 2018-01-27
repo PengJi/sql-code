@@ -278,7 +278,7 @@ fft_main(PG_FUNCTION_ARGS)
 		// 	exit(-1);
 		
 		/*
-		//一下从数据库表中读取数据
+		//从数据库表中读取数据
 		char *command="select val from test order by id";
 	    int ret;
 	    uint64 proc;

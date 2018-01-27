@@ -90,5 +90,28 @@ hello(PG_FUNCTION_ARGS){
 
 	PG_RETURN_INT32(arg);
 }
+/*
+ * select fft(1);
+ */
+
+PG_FUNCTION_INFO_V1(add_ab);
+Datum 
+add_ab(PG_FUNCTION_ARGS){
+	int i,j;
+	int32 arg_a = PG_GETARG_INT32(0);
+	int32 arg_b = PG_GETARG_INT32(1);
+	int res;
+
+	//ereport(INFO,(errmsg("arg1: %d; arg2: %d",arg_a,arg_b)));
+
+	for(i=0;i<10000000;i++){
+		for(j=0;j<10000;j++){
+			res = arg_a + arg_b;
+		}
+	}
+
+	//PG_RETURN_INT32(res);
+	PG_RETURN_NULL();
+}
 
 
