@@ -21,6 +21,7 @@ PG_FUNCTION_INFO_V1(hello);
 Datum 
 hello(PG_FUNCTION_ARGS)
 {
+	int i,j;
 	int32 arg = PG_GETARG_INT32(0);
 
 	int num_procs = omp_get_num_procs();
@@ -50,7 +51,17 @@ hello(PG_FUNCTION_ARGS)
         ereport(INFO,(errmsg("num_threads")));
         ereport(INFO,(errmsg("Thread ID: %d",omp_get_thread_num())));
     }
-	
+
+/*	
+#pragma omp parallel num_threads(2)
+    {
+        ereport(INFO,(errmsg("Thread ID: %d",omp_get_thread_num())));
+		for(i=0;i<10000000;i++){
+			for(j=0;j<10000;j++){}
+		}
+    }
+*/
+
 	test();
 
     PG_RETURN_INT32(arg);
