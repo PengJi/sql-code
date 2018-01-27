@@ -7,6 +7,16 @@
 PG_MODULE_MAGIC;
 #endif
 
+int test(){
+#pragma omp parallel num_threads(2)
+    {   
+        ereport(INFO,(errmsg("test num_threads")));
+        ereport(INFO,(errmsg("Thread ID: %d",omp_get_thread_num())));
+    }
+
+	return 0;
+}
+
 PG_FUNCTION_INFO_V1(hello);
 Datum 
 hello(PG_FUNCTION_ARGS)
@@ -24,6 +34,7 @@ hello(PG_FUNCTION_ARGS)
         ereport(INFO,(errmsg("task")));
     }
 
+	omp_set_num_threads(10);
 #pragma omp parallel
 	{
 		ereport(INFO,(errmsg("parallel")));
@@ -33,6 +44,14 @@ hello(PG_FUNCTION_ARGS)
     {
         ereport(INFO,(errmsg("task")));
     }
+
+#pragma omp parallel num_threads(2)
+    {
+        ereport(INFO,(errmsg("num_threads")));
+        ereport(INFO,(errmsg("Thread ID: %d",omp_get_thread_num())));
+    }
+	
+	test();
 
     PG_RETURN_INT32(arg);
 }
