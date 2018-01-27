@@ -364,7 +364,7 @@ fft_main(PG_FUNCTION_ARGS)
 	}
 
 	// 划分各个进程的工作范围 startPos ~ stopPos
-	int everageLength=wLength/size; // 8/4=2
+	int everageLength=wLength/size; // 8/4=2(假设有四个进程)
 	int moreLength=wLength%size; // 8%4=0
 	int startPos=moreLength+rank*everageLength; // 0+0*2=0; 0+1*2=1; 0+2*2=4; 0+3*2=6
 	int stopPos=startPos+everageLength-1; // 0+2-1=1; 1+2-1=2; 4+2-1=5; 6+2-1=7

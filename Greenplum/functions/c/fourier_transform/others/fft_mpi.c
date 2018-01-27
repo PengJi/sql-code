@@ -251,7 +251,7 @@ void shuffle(complex_t* f, int beginPos, int endPos)
  * 			rightPos : 所负责计算输出的y的片断的终止下标
  * 			totalLength : y的长度
  */
-void evaluate(complex_t* f, int beginPos, int endPos,const complex_t* x, complex_t* y,
+void evaluate(complex_t* f, int beginPos, int endPos, const complex_t* x, complex_t* y,
 int leftPos, int rightPos, int totalLength)
 {
     int i;
@@ -310,6 +310,7 @@ int main(int argc,char * argv[])
 	MPI_Comm_rank(MPI_COMM_WORLD,&rank);
 	MPI_Comm_size(MPI_COMM_WORLD,&size);
 
+	// 分发数据
 	if(rank==0)
 	{
 		// 0# 进程从文件读入多项式p的阶数和系数序列
@@ -358,11 +359,19 @@ int main(int argc,char * argv[])
 		stopPos=moreLength+everageLength-1; // 0+4-1=3
 	}
 
-    // 对p作FFT，输出序列为s，每个进程仅负责计算出序列中位置为startPos 到 stopPos的元素
+    // 对p作FFT，输出序列为s，每个进程仅负责计算出序列中位置为 startPos 到 stopPos 的元素
 	evaluate(p,0,variableNum-1,w,s,startPos,stopPos,wLength);
+	// p 原始序列
+	// 0 原始序列在数组f中的第一个下标
+	// variableNum-1 原始序列在数组f中的最后一个下标
+	// w 存放单位根的数组，其元素为w,w^2,w^3...
+	// s 输出序列
+	// startPos 所负责计算输出的y的片断的起始下标
+	// stopPos 所负责计算输出的y的片断的终止下标
+	// wLength s的长度
 	
 	printf("partial results, process %d.\n",rank);	
-	myprint(s,wLength); // 输出每个进程的结果
+	myprint(s,wLength); // 输出每个进程的结果(部分结果)
 	
 	// 各个进程都把s中自己负责计算出来的部分发送给进程0，并从进程0接收汇总的s
 	if(rank>0)
