@@ -1,6 +1,6 @@
 CXXFLAGS = -I/home/gpdba/greenplum/include/postgresql/server
 LDFLAGS = -lpthread
-SRC_FFT = test.c
+SRC_FFT = pthread.c
 
 #all: fft.so
 

@@ -1,4 +1,4 @@
-create or replace function fft(integer)
+create or replace function fft_pthreads(integer)
 returns int
 as '/home/gpdba/sql_prac/Greenplum/functions/c/fourier_transform/fft_parallel/pthreads/fft_pthreads', 'fft_main'
 language c strict;

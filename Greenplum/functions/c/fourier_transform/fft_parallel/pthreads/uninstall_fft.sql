@@ -1,1 +1,1 @@
-drop function fft_main(integer);
+drop function fft_pthreads(integer);
