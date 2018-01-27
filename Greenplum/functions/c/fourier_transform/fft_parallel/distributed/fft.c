@@ -114,6 +114,7 @@ add_ab(PG_FUNCTION_ARGS){
 	PG_RETURN_NULL();
 }
 /*
+ * select addab(1,2);
  * select addab(n1,n2) from tb;
  */
 
