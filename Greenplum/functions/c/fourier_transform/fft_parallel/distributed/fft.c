@@ -113,5 +113,8 @@ add_ab(PG_FUNCTION_ARGS){
 	//PG_RETURN_INT32(res);
 	PG_RETURN_NULL();
 }
+/*
+ * select addab(n1,n2) from tb;
+ */
 
 
