@@ -1,4 +1,5 @@
 #include <mpi.h>
+#include <omp.h>
 
 #include "postgres.h"
 #include "funcapi.h"
@@ -419,6 +420,28 @@ fft_main(PG_FUNCTION_ARGS)
 		ereport(INFO,(errmsg("Total running time=%f(s)",totalTime)));
 		ereport(INFO,(errmsg("Distribute data time = %f(s)",transTime)));
 		ereport(INFO,(errmsg("Parallel compute time = %f(s) ",totalTime-transTime)));
+	}
+
+#pragma omp task
+	{
+		ereport(INFO,(errmsg("task")));
+		ereport(INFO,(errmsg("Thread ID: %d",omp_get_thread_num())));
+	}
+#pragma omp task
+	{
+		ereport(INFO,(errmsg("task")));
+		ereport(INFO,(errmsg("Thread ID: %d",omp_get_thread_num())));
+	}
+
+#pragma omp parallel
+	{
+		ereport(INFO,(errmsg("parallel")));
+	}
+
+#pragma omp parallel num_threads(2)
+	{
+		ereport(INFO,(errmsg("num_threads")));
+		ereport(INFO,(errmsg("Thread ID: %d",omp_get_thread_num())));
 	}
 
 	MPI_Finalize();

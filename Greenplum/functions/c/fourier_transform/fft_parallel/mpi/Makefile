@@ -7,7 +7,7 @@ SRC_FFT = fft_mpi.c
 fft_mpi.so:$(SRC_FFT)
 	#gcc $^ -o $@ -lm
 	mpicc $(CXXFLAGS) -fpic -c $^
-	mpicc $(LDFLAGS) -shared -o $@ *.o
+	mpicc $(LDFLAGS) -fopenmp -shared -o $@ *.o
 
 .PHONY: clean
 clean :
