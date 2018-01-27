@@ -7,3 +7,8 @@ create or replace function addab(int,int)
 returns int
 as '/home/gpdba/sql_prac/Greenplum/functions/c/fourier_transform/fft_parallel/distributed/fft', 'add_ab'
 language c strict;
+
+create or replace function call_udf(int)
+returns int
+as '/home/gpdba/sql_prac/Greenplum/functions/c/fourier_transform/fft_parallel/distributed/fft', 'call_udf'
+language c strict;

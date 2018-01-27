@@ -62,6 +62,11 @@ int read_data(){
 	return 0;
 }
 
+/*
+ * 测试在主节点上执行
+ *
+ * select fft(1);
+ */
 PG_FUNCTION_INFO_V1(hello);
 Datum 
 hello(PG_FUNCTION_ARGS){
@@ -81,8 +86,8 @@ hello(PG_FUNCTION_ARGS){
 		ereport(INFO,(errmsg("GP_ROLE_UTILITY")));
 	}
 
-	for(i=0;i<10000000;i++){
-		for(j=0;j<10000;j++){
+	for(i=0;i<1000000;i++){
+		for(j=0;j<30000;j++){
 		}
 	}
 
@@ -90,10 +95,16 @@ hello(PG_FUNCTION_ARGS){
 
 	PG_RETURN_INT32(arg);
 }
-/*
- * select fft(1);
- */
 
+/* 
+ * 对表中的记录相加
+ *
+ * 在主节点上执行
+ * select addab(1,2);
+ *
+ * 在segment上执行
+ * select addab(n1,n2) from tb;
+ */
 PG_FUNCTION_INFO_V1(add_ab);
 Datum 
 add_ab(PG_FUNCTION_ARGS){
@@ -104,18 +115,31 @@ add_ab(PG_FUNCTION_ARGS){
 
 	//ereport(INFO,(errmsg("arg1: %d; arg2: %d",arg_a,arg_b)));
 
-	for(i=0;i<10000000;i++){
-		for(j=0;j<10000;j++){
+	for(i=0;i<1000000;i++){
+		for(j=0;j<30000;j++){
 			res = arg_a + arg_b;
 		}
 	}
 
-	//PG_RETURN_INT32(res);
-	PG_RETURN_NULL();
+	PG_RETURN_INT32(res);
+	//PG_RETURN_NULL();
 }
+
 /*
- * select addab(1,2);
- * select addab(n1,n2) from tb;
+ * 调用自定义函数
+ * select call_udf(1);
  */
+PG_FUNCTION_INFO_V1(call_udf);
+Datum
+call_udf(PG_FUNCTION_ARGS){
+	int32 arg = PG_GETARG_INT32(0);
+	int MAX_LINE = 16384;
 
+	char *command="select addab(n1,n2) from tb order by id";
+	SPI_connect();
+	SPI_exec(command, MAX_LINE);
+	SPI_finish();
 
+    //PG_RETURN_INT32(res);
+    PG_RETURN_NULL();
+}
