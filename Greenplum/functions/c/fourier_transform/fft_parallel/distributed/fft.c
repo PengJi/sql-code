@@ -65,7 +65,8 @@ int read_data(){
 /*
  * 测试在主节点上执行
  *
- * select fft(1);
+ * 只在主节点上执行
+ * select hello(1);
  */
 PG_FUNCTION_INFO_V1(hello);
 Datum 
@@ -90,6 +91,58 @@ hello(PG_FUNCTION_ARGS){
 		for(j=0;j<30000;j++){
 		}
 	}
+
+	ereport(INFO,(errmsg("a=%d",a)));
+
+	PG_RETURN_INT32(arg);
+}
+
+/*
+ * 测试在主节点上执行
+ *
+ * 函数只在主节点上执行
+ * select hello_gprole(1);
+ *
+ * 函数只在主节点上执行
+ * select hello_gprole(1) from test;
+ *
+ * 函数只在segment上执行
+ * select hello_gprole(id) from test;
+ */
+PG_FUNCTION_INFO_V1(hello_gprole);
+Datum 
+hello_gprole(PG_FUNCTION_ARGS){
+	int32 arg = PG_GETARG_INT32(0);
+	int a = 1;
+	int i,j;
+
+	if (Gp_role == GP_ROLE_EXECUTE){
+		ereport(INFO,(errmsg("GP_ROLE_EXECUTE")));
+		a = a+1;
+
+		for(i=0;i<1000000;i++){
+			for(j=0;j<20000;j++){
+			}
+		}
+	}else if(Gp_role == GP_ROLE_DISPATCH){
+		ereport(INFO,(errmsg("GP_ROLE_DISPATCH")));
+		a = a+2;
+
+		for(i=0;i<1000000;i++){
+			for(j=0;j<20000;j++){
+			}
+		}
+	}else if(Gp_role == GP_ROLE_UTILITY){
+		ereport(INFO,(errmsg("GP_ROLE_UTILITY")));
+	}
+
+	/*
+	//当在segment上执行的时候，下面语句也只在segment上执行
+	for(i=0;i<1000000;i++){
+		for(j=0;j<20000;j++){
+		}
+	}
+	*/
 
 	ereport(INFO,(errmsg("a=%d",a)));
 
