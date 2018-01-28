@@ -98,6 +98,7 @@ hello(PG_FUNCTION_ARGS){
 
 /*
  * 基本加法
+ * 对表中的记录相加
  */
 PG_FUNCTION_INFO_V1(add_ab);
 Datum 
@@ -111,7 +112,7 @@ add_ab(PG_FUNCTION_ARGS){
 }
 
 /* 
- * 对表中的记录相加
+ * 对表中的记录相加，重复计算
  *
  * 在主节点上执行
  * select addab(1,2);
