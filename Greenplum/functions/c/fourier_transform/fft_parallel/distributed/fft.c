@@ -96,6 +96,20 @@ hello(PG_FUNCTION_ARGS){
 	PG_RETURN_INT32(arg);
 }
 
+/*
+ * 基本加法
+ */
+PG_FUNCTION_INFO_V1(add_ab);
+Datum 
+add_ab(PG_FUNCTION_ARGS){
+	int32 arg_a = PG_GETARG_INT32(0);
+	int32 arg_b = PG_GETARG_INT32(1);
+
+	ereport(INFO,(errmsg("arg1: %d; arg2: %d",arg_a,arg_b)));
+
+	PG_RETURN_INT32(arg_a + arg_b);
+}
+
 /* 
  * 对表中的记录相加
  *
@@ -105,9 +119,9 @@ hello(PG_FUNCTION_ARGS){
  * 在segment上执行
  * select addab(n1,n2) from tb;
  */
-PG_FUNCTION_INFO_V1(add_ab);
+PG_FUNCTION_INFO_V1(add_for);
 Datum 
-add_ab(PG_FUNCTION_ARGS){
+add_for(PG_FUNCTION_ARGS){
 	int i,j;
 	int32 arg_a = PG_GETARG_INT32(0);
 	int32 arg_b = PG_GETARG_INT32(1);
