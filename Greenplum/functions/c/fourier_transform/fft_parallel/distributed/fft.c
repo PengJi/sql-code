@@ -328,7 +328,6 @@ Datum
 fft_exec(PG_FUNCTION_ARGS){
 	// 先保存从节点上的所有数据，然后再计算
 	int32 arg = PG_GETARG_INT32(0);
-	int MAX_LINE = 16384;
 
 	char *command="select addab(n1,n2) from tb order by id";
 	SPI_connect();
@@ -478,7 +477,6 @@ PG_FUNCTION_INFO_V1(call_udf);
 Datum
 call_udf(PG_FUNCTION_ARGS){
 	int32 arg = PG_GETARG_INT32(0);
-	int MAX_LINE = 16384;
 
 	char *command="select addab(n1,n2) from tb order by id";
 	SPI_connect();
