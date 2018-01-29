@@ -7,6 +7,17 @@
 PG_MODULE_MAGIC;
 #endif
 
+#define MAX_N 4096
+#define PI 3.1415926535897932
+#define EPS 10E-8
+#define V_TAG 99
+#define P_TAG 100
+#define Q_TAG 101
+#define R_TAG 102
+#define S_TAG 103
+#define S_TAG2 104
+#define MAX_LINE 16384
+
 typedef int BOOL; 
 
 typedef struct 
