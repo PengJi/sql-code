@@ -7,6 +7,198 @@
 PG_MODULE_MAGIC;
 #endif
 
+typedef int BOOL; 
+
+typedef struct 
+{
+    double r;
+    double i;
+}complex_t;
+
+complex_t p[MAX_N],s[2*MAX_N],r[2*MAX_N];
+complex_t w[2*MAX_N];
+uint64 variableNum;
+double transTime=0,totalTime=0,beginTime;
+MPI_Status status;
+
+/**
+ * 复数相加
+ * @param result [description]
+ * @param c1     [description]
+ * @param c2     [description]
+ */
+void comp_add(complex_t* result,const complex_t* c1,const complex_t* c2)
+{
+    result->r=c1->r+c2->r;
+    result->i=c1->i+c2->i;
+}
+
+/**
+ * 复数相乘
+ * @param result [description]
+ * @param c1     [description]
+ * @param c2     [description]
+ */
+void comp_multiply(complex_t* result,const complex_t* c1,const complex_t* c2)
+{
+    result->r=c1->r*c2->r-c1->i*c2->i;
+    result->i=c1->r*c2->i+c2->r*c1->i;
+}
+
+/**
+ * 移动f中从beginPos到endPos位置的元素，使之按位置奇偶
+ * 重新排列。举例说明:假设数组f，beginPos=2, endPos=5
+ * 则shuffle函数的运行结果为f[2..5]重新排列，排列后各个
+ * 位置对应的原f的元素为: f[2],f[4],f[3],f[5]
+ * @param f        操作数组首地址
+ * @param beginPos 第一个下标
+ * @param endPos   最后一个下标
+ */
+void shuffle(complex_t* f, int beginPos, int endPos)
+{
+    int i;
+    complex_t temp[2*MAX_N];
+
+    for(i = beginPos; i <= endPos; i ++)
+    {
+        temp[i] = f[i];
+    }
+
+    int j = beginPos;
+    for(i = beginPos; i <= endPos; i +=2)
+    {
+        f[j] = temp[i];
+        j++;
+    }
+    for(i = beginPos +1; i <= endPos; i += 2)
+    {
+        f[j] = temp[i];
+        j++;
+    }
+}
+
+/**
+ * 对复数序列f进行FFT或者IFFT(由x决定)，结果序列为y，
+ * 产生leftPos 到 rightPos之间的结果元素
+ * @param f           原始序列数组首地址
+ * @param beginPos    原始序列在数组f中的第一个下标
+ * @param endPos      原始序列在数组f中的最后一个下标
+ * @param x           存放单位根的数组，其元素为w,w^2,w^3...
+ * @param y           输出序列
+ * @param leftPos     所负责计算输出的y的片断的起始下标
+ * @param rightPos    所负责计算输出的y的片断的终止下标
+ * @param totalLength y的长度
+ */
+void evaluate(complex_t* f, int beginPos, int endPos,const complex_t* x, complex_t* y,
+int leftPos, int rightPos, int totalLength)
+{
+    int i;
+    if ((beginPos > endPos)||(leftPos > rightPos))
+    {
+        printf("Error in use Polynomial!\n");
+        exit(-1);
+    }
+    else if(beginPos == endPos)
+    {
+        for(i = leftPos; i <= rightPos; i ++)
+        {
+            y[i] = f[beginPos];
+        }
+    }
+    else if(beginPos + 1 == endPos)
+    {
+        for(i = leftPos; i <= rightPos; i ++)
+        {
+            complex_t temp;
+            comp_multiply(&temp, &f[endPos], &x[i]);
+            comp_add(&y[i], &f[beginPos], &temp);
+        }
+    }
+    else
+    {
+        complex_t tempX[2*MAX_N],tempY1[2*MAX_N], tempY2[2*MAX_N];
+        int midPos = (beginPos + endPos)/2;
+
+        shuffle(f, beginPos, endPos);
+
+        for(i = leftPos; i <= rightPos; i ++)
+        {
+            comp_multiply(&tempX[i], &x[i], &x[i]);
+        }
+
+        evaluate(f, beginPos, midPos, tempX, tempY1,
+            leftPos, rightPos, totalLength);
+        evaluate(f, midPos+1, endPos, tempX, tempY2,
+            leftPos, rightPos, totalLength);
+
+        for(i = leftPos; i <= rightPos; i ++)
+        {
+            complex_t temp;
+            comp_multiply(&temp, &x[i], &tempY2[i]);
+            comp_add(&y[i], &tempY1[i], &temp);
+        }
+    }
+}
+
+/**
+ * 打印完整实数
+ * @param f       f为待打印数组的首地址
+ * @param fLength fLength为数组的长度
+ */
+void print_res(const complex_t* f,int fLength)
+{
+	int i;
+
+	for(i=0;i<fLength;i+=2)
+	{		
+		if(f[i].i<0)
+			ereport(INFO,(errmsg("%f-%fi\n",f[i].r,-f[i].i)));
+		else
+			ereport(INFO,(errmsg("%f+%fi\n",f[i].r,f[i].i)));
+	}
+}
+
+/**
+ * 添加运行时间
+ * @param toAdd 运行时间
+ */
+void addTransTime(double toAdd)
+{
+	transTime+=toAdd;
+}
+
+/**
+ * 把原始数据发送给其它进程
+ * @param size 集群中进程的数目
+ */
+void sendOrigData(int size)
+{
+	int i;
+
+	for(i=1;i<size;i++)
+	{
+		//向所有进程发送数据的总个数
+		MPI_Send(&variableNum,1,MPI_INT,i,V_TAG,MPI_COMM_WORLD);
+		//向所有进程发送数据
+		MPI_Send(p, variableNum * 2, MPI_DOUBLE, i, P_TAG, MPI_COMM_WORLD);
+	}
+}
+
+/**
+ * 接受原始数据，从进程0接收消息
+ */
+void recvOrigData()
+{
+	//从进程0接收数据的总个数
+	MPI_Recv(&variableNum,1,MPI_INT,0,V_TAG,MPI_COMM_WORLD,&status);
+	//从进程0接收所有的数据
+	MPI_Recv(p, variableNum * 2, MPI_DOUBLE, 0, P_TAG, MPI_COMM_WORLD, &status);
+}
+
+/**
+ * [read_data description]
+ * @return [description]
+ */
 int read_data(){
 	/*
 	//从数据库表中读取数据
@@ -63,6 +255,78 @@ int read_data(){
 }
 
 /*
+ * fft主函数
+ */
+PG_FUNCTION_INFO_V1(fft);
+Datum 
+fft(PG_FUNCTION_ARGS){
+	// 1.初始化旋转因子
+	/*
+	int wLength=2*variableNum;
+	for(i=0;i<wLength;i++)
+	{
+		w[i].r=cos(i*2*PI/wLength);
+		w[i].i=sin(i*2*PI/wLength);
+	}
+	 */
+	
+	// 2.各从节点计算部分傅里叶变换
+	/*
+	// 对p作FFT，输出序列为s，每个进程仅负责计算出序列中位置为 startPos 到 stopPos 的元素
+	evaluate(p,0,variableNum-1,w,s,startPos,stopPos,wLength);
+	// p 原始序列
+	// 0 原始序列在数组f中的第一个下标
+	// variableNum-1 原始序列在数组f中的最后一个下标
+	// w 存放单位根的数组，其元素为w,w^2,w^3...
+	// s 输出序列
+	// startPos 所负责计算输出的y的片断的起始下标
+	// stopPos 所负责计算输出的y的片断的终止下标
+	// wLength s的长度
+	 */
+	
+	// 3.将各部分的计算结果汇总
+	/*
+	//其他进程都将 s 中自己负责计算出来的部分发送给进程0，并从进程0接收汇总的s
+	MPI_Send(s+startPos,everageLength*2,MPI_DOUBLE,0,S_TAG,MPI_COMM_WORLD);
+	MPI_Recv(s,wLength*2,MPI_DOUBLE,0,S_TAG2,MPI_COMM_WORLD,&status);
+
+	// 进程0接收s片段
+	for(i=1;i<size;i++)
+	{
+		MPI_Recv(s+moreLength+i*everageLength,everageLength*2,MPI_DOUBLE,i,S_TAG,MPI_COMM_WORLD,&status);
+	}
+
+	// 进程0向其余进程发送完整的结果s	
+	for(i=1;i<size;i++)
+	{
+		MPI_Send(s,wLength*2,MPI_DOUBLE,i,S_TAG2,MPI_COMM_WORLD);
+	}
+	 */
+	
+	//PG_RETURN_INT32(res);
+    PG_RETURN_NULL();
+}
+
+/*
+ * 从节点上执行fft
+ */
+PG_FUNCTION_INFO_V1(fft_exec);
+Datum 
+fft_exec(PG_FUNCTION_ARGS){
+	// 先保存从节点上的所有数据，然后再计算
+	int32 arg = PG_GETARG_INT32(0);
+	int MAX_LINE = 16384;
+
+	char *command="select addab(n1,n2) from tb order by id";
+	SPI_connect();
+	SPI_exec(command, MAX_LINE);
+	SPI_finish();
+
+    //PG_RETURN_INT32(res);
+    PG_RETURN_NULL();
+}
+
+/*
  * 测试在主节点上执行
  *
  * 只在主节点上执行
@@ -98,7 +362,7 @@ hello(PG_FUNCTION_ARGS){
 }
 
 /*
- * 测试在主节点上执行
+ * 测试在主节点/从节点上执行
  *
  * 函数只在主节点上执行
  * select hello_gprole(1);

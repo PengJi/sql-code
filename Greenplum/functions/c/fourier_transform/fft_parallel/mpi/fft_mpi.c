@@ -37,12 +37,24 @@ uint64 variableNum;
 double transTime=0,totalTime=0,beginTime;
 MPI_Status status;
 
+/**
+ * [comp_add description]
+ * @param result [description]
+ * @param c1     [description]
+ * @param c2     [description]
+ */
 void comp_add(complex_t* result,const complex_t* c1,const complex_t* c2)
 {
     result->r=c1->r+c2->r;
     result->i=c1->i+c2->i;
 }
 
+/**
+ * [comp_multiply description]
+ * @param result [description]
+ * @param c1     [description]
+ * @param c2     [description]
+ */
 void comp_multiply(complex_t* result,const complex_t* c1,const complex_t* c2)
 {
     result->r=c1->r*c2->r-c1->i*c2->i;
