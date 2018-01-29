@@ -1,3 +1,5 @@
+#include <mpi.h>
+
 #include "postgres.h"
 #include "funcapi.h"
 
