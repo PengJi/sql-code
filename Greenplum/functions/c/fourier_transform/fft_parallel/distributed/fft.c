@@ -209,7 +209,7 @@ void recvOrigData()
 }
 
 /**
- * [read_data description]
+ * 读数据
  * @return [description]
  */
 int read_data(){
