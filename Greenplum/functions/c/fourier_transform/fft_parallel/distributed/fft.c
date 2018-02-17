@@ -241,24 +241,60 @@ int read_data(){
 	return 0;
 }
 
-int cost_cpu(){
-
+/**
+ * @brief      计算每个segment的cpu代价
+ *
+ * @param[in]  segid  The flag
+ *
+ * @return     { description_of_the_return_value }
+ */
+int cost_cpu(int segid){
+	return 1;
 }
 
-int cost_io(){
-
+/**
+ * @brief      计算每个segment的io代价
+ *
+ * @param[in]  segid     { parameter_description }
+ *
+ * @return     { description_of_the_return_value }
+ */
+int cost_io(int segid){
+	return 1;
 }
 
-int cost_net(){
-
+/**
+ * @brief      { function_description }
+ *
+ * @param[in]  segid  The segid
+ *
+ * @return     { description_of_the_return_value }
+ */
+int cost_net(int segid){
+	retunr 1;
 }
 
-int cost_wait(){
-
+/**
+ * @brief      计算任务的平均等待时间
+ *
+ * @param[in]  segid  The segid
+ *
+ * @return     { description_of_the_return_value }
+ */
+int cost_wait(int segid){
+	return 1;
 }
 
-int cost_sum(){
-	
+/**
+ * @brief      计算总代价
+ *
+ * @param[in]  segid  The segid
+ *
+ * @return     { description_of_the_return_value }
+ */
+int cost_sum(int segid){
+
+	return cost_cpu() + cost_io() + cost_net() + cost_wait(); 
 }
 
 /**
