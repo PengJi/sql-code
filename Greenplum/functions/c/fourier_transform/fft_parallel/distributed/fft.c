@@ -242,13 +242,29 @@ int read_data(){
 }
 
 /**
+ * @brief      确定数据分布
+ *
+ * @return     { description_of_the_return_value }
+ */
+int judge_seg(){
+	/*
+	数据分布到哪几个segment上。
+	1.数据均匀分布在各个segment上；
+	2.数据分布在其中几个segment上；
+	*/
+}
+
+/**
  * @brief      计算每个segment的cpu代价
  *
  * @param[in]  segid  The flag
  *
  * @return     { description_of_the_return_value }
  */
-int cost_cpu(int segid){
+int cost_cpu(int from_segid, int to_segid, int size){
+	/*
+	获取CPU使用率
+	*/
 	return 1;
 }
 
@@ -259,7 +275,7 @@ int cost_cpu(int segid){
  *
  * @return     { description_of_the_return_value }
  */
-int cost_io(int segid){
+int cost_io(int from_segid, int to_segid, int size){
 	return 1;
 }
 
@@ -270,7 +286,7 @@ int cost_io(int segid){
  *
  * @return     { description_of_the_return_value }
  */
-int cost_net(int segid){
+int cost_net(int from_segid, int to_segid, int size){
 	retunr 1;
 }
 
@@ -281,7 +297,10 @@ int cost_net(int segid){
  *
  * @return     { description_of_the_return_value }
  */
-int cost_wait(int segid){
+int cost_wait(int from_segid, int to_segid){
+	/*
+	分析每个segment的执行日志，判断任务的平均等待时间
+	*/
 	return 1;
 }
 
@@ -292,9 +311,17 @@ int cost_wait(int segid){
  *
  * @return     { description_of_the_return_value }
  */
-int cost_sum(int segid){
+int cost_sum(int from_segid,int to_segid){
 
 	return cost_cpu() + cost_io() + cost_net() + cost_wait(); 
+}
+
+/**
+ * @brief      迁移数据
+ *
+ * @param[in]  segid  The segid
+ */
+void adjust_seg(int segid){
 }
 
 /**

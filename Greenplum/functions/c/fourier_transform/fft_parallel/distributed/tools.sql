@@ -1,5 +1,5 @@
 -- 建立外部表分析日志
-nohup gpfdist -d /data/master/gpseg-1/pg_log -p 8081 &
+nohup gpfdist -d /home/gpadmin/gpdata/gpseg-1/pg_log -p 8081 &
 
 gpfdist -d /home/gpadmin/gpdata/gpseg-1/pg_log -p 8081 
 
