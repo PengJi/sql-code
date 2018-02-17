@@ -1,38 +1,12 @@
-#include <mpi.h>
-
 #include "postgres.h"
 #include "funcapi.h"
-
 #include "cdb/cdbvars.h"
+
+#include "fft.h"
 
 #ifdef PG_MODULE_MAGIC
 PG_MODULE_MAGIC;
 #endif
-
-#define MAX_N 4096
-#define PI 3.1415926535897932
-#define EPS 10E-8
-#define V_TAG 99
-#define P_TAG 100
-#define Q_TAG 101
-#define R_TAG 102
-#define S_TAG 103
-#define S_TAG2 104
-#define MAX_LINE 16384
-
-typedef int BOOL; 
-
-typedef struct 
-{
-    double r;
-    double i;
-}complex_t;
-
-complex_t p[MAX_N],s[2*MAX_N],r[2*MAX_N];
-complex_t w[2*MAX_N];
-uint64 variableNum;
-double transTime=0,totalTime=0,beginTime;
-MPI_Status status;
 
 /**
  * 复数相加
@@ -267,7 +241,27 @@ int read_data(){
 	return 0;
 }
 
-/*
+int cost_cpu(){
+
+}
+
+int cost_io(){
+
+}
+
+int cost_net(){
+
+}
+
+int cost_wait(){
+
+}
+
+int cost_sum(){
+	
+}
+
+/**
  * fft主函数
  */
 PG_FUNCTION_INFO_V1(fft);
@@ -281,7 +275,7 @@ fft(PG_FUNCTION_ARGS){
 		w[i].r=cos(i*2*PI/wLength);
 		w[i].i=sin(i*2*PI/wLength);
 	}
-	 */
+	*/
 	
 	// 2.各从节点计算部分傅里叶变换
 	/*
@@ -295,7 +289,7 @@ fft(PG_FUNCTION_ARGS){
 	// startPos 所负责计算输出的y的片断的起始下标
 	// stopPos 所负责计算输出的y的片断的终止下标
 	// wLength s的长度
-	 */
+	*/
 	
 	// 3.将各部分的计算结果汇总
 	/*
@@ -320,7 +314,7 @@ fft(PG_FUNCTION_ARGS){
     PG_RETURN_NULL();
 }
 
-/*
+/**
  * 从节点上执行fft
  */
 PG_FUNCTION_INFO_V1(fft_exec);
@@ -338,7 +332,7 @@ fft_exec(PG_FUNCTION_ARGS){
     PG_RETURN_NULL();
 }
 
-/*
+/**
  * 测试在主节点上执行
  *
  * 只在主节点上执行
@@ -373,7 +367,7 @@ hello(PG_FUNCTION_ARGS){
 	PG_RETURN_INT32(arg);
 }
 
-/*
+/**
  * 测试在主节点/从节点上执行
  *
  * 函数只在主节点上执行
@@ -425,7 +419,7 @@ hello_gprole(PG_FUNCTION_ARGS){
 	PG_RETURN_INT32(arg);
 }
 
-/*
+/**
  * 基本加法
  * 对表中的记录相加
  */
@@ -440,7 +434,7 @@ add_ab(PG_FUNCTION_ARGS){
 	PG_RETURN_INT32(arg_a + arg_b);
 }
 
-/* 
+/** 
  * 对表中的记录相加，重复计算
  *
  * 在主节点上执行
@@ -469,7 +463,7 @@ add_for(PG_FUNCTION_ARGS){
 	//PG_RETURN_NULL();
 }
 
-/*
+/**
  * 调用自定义函数
  * select call_udf(1);
  */
