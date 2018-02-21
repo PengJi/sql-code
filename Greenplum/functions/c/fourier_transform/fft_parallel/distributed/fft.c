@@ -247,11 +247,7 @@ int read_data(){
  * @return     { description_of_the_return_value }
  */
 int judge_seg(){
-	/*
-	数据分布到哪几个segment上。
-	1.数据均匀分布在各个segment上；
-	2.数据分布在其中几个segment上；
-	*/
+	return 1;
 }
 
 /**

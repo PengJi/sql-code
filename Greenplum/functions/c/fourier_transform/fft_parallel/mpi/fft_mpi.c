@@ -61,14 +61,15 @@ void comp_multiply(complex_t* result,const complex_t* c1,const complex_t* c2)
     result->i=c1->r*c2->i+c2->r*c1->i;
 }
 
-/*
- * Function:    shuffle
- * Description: 移动f中从beginPos到endPos位置的元素，使之按位置奇偶
- *              重新排列。举例说明:假设数组f，beginPos=2, endPos=5
- *              则shuffle函数的运行结果为f[2..5]重新排列，排列后各个
- *              位置对应的原f的元素为: f[2],f[4],f[3],f[5]
- * Parameters:  f为被操作数组首地址
- *              beginPos, endPos为操作的下标范围
+/**
+ * @brief      移动f中从beginPos到endPos位置的元素，使之按位置奇偶
+ * 				重新排列。举例说明:假设数组f，beginPos=2, endPos=5
+ * 				则shuffle函数的运行结果为f[2..5]重新排列，排列后各个
+ * 				位置对应的原f的元素为: f[2],f[4],f[3],f[5]
+ *
+ * @param      f         被操作数组首地址
+ * @param[in]  beginPos  数据的开始位置
+ * @param[in]  endPos    数组的结束位置
  */
 void shuffle(complex_t* f, int beginPos, int endPos)
 {
@@ -93,18 +94,18 @@ void shuffle(complex_t* f, int beginPos, int endPos)
     }
 }
 
-/*
- * Function:		evaluate
- * Description:	对复数序列f进行FFT或者IFFT(由x决定)，结果序列为y，
- * 			产生leftPos 到 rightPos之间的结果元素
- * Parameters:	f : 原始序列数组首地址
- * 			beginPos : 原始序列在数组f中的第一个下标
- * 			endPos : 原始序列在数组f中的最后一个下标
- * 			x : 存放单位根的数组，其元素为w,w^2,w^3...
- * 			y : 输出序列
- * 			leftPos : 所负责计算输出的y的片断的起始下标
- * 			rightPos : 所负责计算输出的y的片断的终止下标
- * 			totalLength : y的长度
+/**
+ * @brief      对复数序列f进行FFT或者IFFT(由x决定)，结果序列为y，
+ * 				产生leftPos 到 rightPos之间的结果元素
+ *
+ * @param      f            原始序列数组首地址
+ * @param[in]  beginPos     原始序列在数组f中的第一个下标
+ * @param[in]  endPos       原始序列在数组f中的最后一个下标
+ * @param[in]  x            存放单位根的数组，其元素为w,w^2,w^3...
+ * @param      y            输出序列
+ * @param[in]  leftPos      所负责计算输出的y的片断的起始下标
+ * @param[in]  rightPos     所负责计算输出的y的片断的终止下标
+ * @param[in]  totalLength  y的长度
  */
 void evaluate(complex_t* f, int beginPos, int endPos,const complex_t* x, complex_t* y,
 int leftPos, int rightPos, int totalLength)
