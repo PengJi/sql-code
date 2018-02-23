@@ -101,7 +101,7 @@ void shuffle(complex_t* f, int beginPos, int endPos)
  * @param      f            原始序列数组首地址
  * @param[in]  beginPos     原始序列在数组f中的第一个下标
  * @param[in]  endPos       原始序列在数组f中的最后一个下标
- * @param[in]  x            存放单位根的数组，其元素为w,w^2,w^3...
+ * @param[in]  x            存放单位根的数组(可视为旋转因子)，其元素为w,w^2,w^3...
  * @param      y            输出序列
  * @param[in]  leftPos      所负责计算输出的y的片断的起始下标
  * @param[in]  rightPos     所负责计算输出的y的片断的终止下标
