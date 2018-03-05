@@ -33,8 +33,8 @@ hello(PG_FUNCTION_ARGS){
 		ereport(INFO,(errmsg("GP_ROLE_UTILITY")));
 	}
 
-	for(i=0;i<1000000;i++){
-		for(j=0;j<30000;j++){
+	for(i=0;i<10000;i++){
+		for(j=0;j<10000;j++){
 		}
 	}
 
@@ -66,16 +66,16 @@ hello_gprole(PG_FUNCTION_ARGS){
 		ereport(INFO,(errmsg("GP_ROLE_EXECUTE")));
 		a = a+1;
 
-		for(i=0;i<1000000;i++){
-			for(j=0;j<20000;j++){
+		for(i=0;i<10000;i++){
+			for(j=0;j<10000;j++){
 			}
 		}
 	}else if(Gp_role == GP_ROLE_DISPATCH){
 		ereport(INFO,(errmsg("GP_ROLE_DISPATCH")));
 		a = a+2;
 
-		for(i=0;i<1000000;i++){
-			for(j=0;j<20000;j++){
+		for(i=0;i<10000;i++){
+			for(j=0;j<10000;j++){
 			}
 		}
 	}else if(Gp_role == GP_ROLE_UTILITY){
