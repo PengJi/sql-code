@@ -1,0 +1,1 @@
+自定义函数测试resource groups配置
