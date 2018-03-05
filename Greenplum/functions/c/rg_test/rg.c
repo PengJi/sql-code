@@ -2,7 +2,7 @@
 #include "funcapi.h"
 #include "cdb/cdbvars.h"
 
-#include "fft.h"
+#include "rg.h"
 
 #ifdef PG_MODULE_MAGIC
 PG_MODULE_MAGIC;
@@ -150,7 +150,7 @@ call_udf(PG_FUNCTION_ARGS){
 
 	char *command="select addab(n1,n2) from tb order by id";
 	SPI_connect();
-	SPI_exec(command, MAX_LINE);
+	SPI_exec(command, 10000);
 	SPI_finish();
 
     //PG_RETURN_INT32(res);
