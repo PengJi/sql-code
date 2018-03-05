@@ -1,4 +1,4 @@
-CXXFLAGS = -I/home/gpdba/greenplum/include/postgresql/server
+CXXFLAGS = -I/home/gpadmin/greenplum/include/postgresql/server
 LDFLAGS = -lm
 SRC_FFT = fft.c
 
