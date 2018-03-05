@@ -35,6 +35,8 @@ hello(PG_FUNCTION_ARGS){
 
 	for(i=0;i<10000;i++){
 		for(j=0;j<10000;j++){
+			a = a + 1;
+			a = a - 1;
 		}
 	}
 
@@ -49,7 +51,7 @@ hello(PG_FUNCTION_ARGS){
  * 函数只在主节点上执行
  * select hello_gprole(1);
  *
- * 函数只在主节点上执行
+ * 函数只在segment上执行
  * select hello_gprole(1) from test;
  *
  * 函数只在segment上执行
@@ -66,16 +68,20 @@ hello_gprole(PG_FUNCTION_ARGS){
 		ereport(INFO,(errmsg("GP_ROLE_EXECUTE")));
 		a = a+1;
 
-		for(i=0;i<10000;i++){
-			for(j=0;j<10000;j++){
+		for(i=0;i<100000;i++){
+			for(j=0;j<100000;j++){
+				a++;
+				a--;;
 			}
 		}
 	}else if(Gp_role == GP_ROLE_DISPATCH){
 		ereport(INFO,(errmsg("GP_ROLE_DISPATCH")));
 		a = a+2;
 
-		for(i=0;i<10000;i++){
-			for(j=0;j<10000;j++){
+		for(i=0;i<100000;i++){
+			for(j=0;j<100000;j++){
+				a++;
+				a--;
 			}
 		}
 	}else if(Gp_role == GP_ROLE_UTILITY){
@@ -129,8 +135,8 @@ add_for(PG_FUNCTION_ARGS){
 
 	//ereport(INFO,(errmsg("arg1: %d; arg2: %d",arg_a,arg_b)));
 
-	for(i=0;i<1000000;i++){
-		for(j=0;j<30000;j++){
+	for(i=0;i<10000;i++){
+		for(j=0;j<10000;j++){
 			res = arg_a + arg_b;
 		}
 	}
