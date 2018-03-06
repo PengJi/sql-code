@@ -188,7 +188,8 @@ void DFT(double * src,Complex * dst,int size){
        /* if(imagin>=0.0)
             printf("%lf+%lfj\n",real,imagin);
         else
-            printf("%lf%lfj\n",real,imagin);*/
+            printf("%lf%lfj\n",real,imagin);
+		*/
     }
     end=clock();
     printf("DFT use time :%lf for Datasize of:%d\n",(double)(end-start)/CLOCKS_PER_SEC,size);
@@ -263,7 +264,6 @@ int FFT_remap(double * src,int size_n){
  * @param size_n [description]
  */
 void FFT(double * src,Complex * dst,int size_n){
-	
     FFT_remap(src, size_n);
 
     for(int i=0;i<size_n;i++)
@@ -307,14 +307,15 @@ void FFT(double * src,Complex * dst,int size_n){
     
     }
     
-    ///* 
+    /*
 	for(int i=0;i<size_n;i++)
     	if(src_com[i].imagin>=0.0){
             printf("%lf+%lfj\n",src_com[i].real,src_com[i].imagin);
         }
         else
             printf("%lf%lfj\n",src_com[i].real,src_com[i].imagin);
-	//*/
+	*/
+
 	for(int i=0;i<size_n;i++){
 		dst[i].imagin=src_com[i].imagin;
 		dst[i].real=src_com[i].real;
