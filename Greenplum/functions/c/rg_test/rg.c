@@ -12,7 +12,7 @@ PG_MODULE_MAGIC;
  * 测试并发查询个数
  *
  */
-PG_FUNCTION_INFO_V1(hello);
+PG_FUNCTION_INFO_V1(test_concur);
 Datum test_concur(PG_FUNCTION_ARGS){
 	ereport(INFO,(errmsg("test_concur")));
 
@@ -21,7 +21,7 @@ Datum test_concur(PG_FUNCTION_ARGS){
 	int i,j;
 
 	for(i=0;i<100000;i++){
-		for(j=0;j<10000;j++){
+		for(j=0;j<100000;j++){
 			a = a + 1;
 			a = a - 1;
 		}
@@ -36,7 +36,7 @@ Datum test_concur(PG_FUNCTION_ARGS){
  * 测试内存
  *
  */
-PG_FUNCTION_INFO_V1(hello);
+PG_FUNCTION_INFO_V1(test_mem);
 Datum test_mem(PG_FUNCTION_ARGS){
 	ereport(INFO,(errmsg("test_mem")));
 
@@ -45,7 +45,7 @@ Datum test_mem(PG_FUNCTION_ARGS){
 	int i,j;
 
 	for(i=0;i<100000;i++){
-		for(j=0;j<10000;j++){
+		for(j=0;j<100000;j++){
 			a = a + 1;
 			a = a - 1;
 		}
