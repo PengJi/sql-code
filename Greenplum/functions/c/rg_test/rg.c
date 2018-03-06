@@ -51,7 +51,8 @@ Datum test_mem(PG_FUNCTION_ARGS){
 		}
 	}
 
-	ereport(INFO,(errmsg("a=%d",a)));
+	void *empty_mem = palloc(256);
+	memset(empty_mem,0,256);
 
 	PG_RETURN_INT32(arg);
 }
