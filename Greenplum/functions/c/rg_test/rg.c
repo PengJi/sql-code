@@ -81,42 +81,6 @@ Datum test_cpu(PG_FUNCTION_ARGS){
     PG_RETURN_INT32(arg);
 }
 
-/**
- * 测试内存
- *
- * select testmem(1) from test;
- */
-PG_FUNCTION_INFO_V1(test_mem);
-Datum test_mem(PG_FUNCTION_ARGS){
-	ereport(INFO,(errmsg("test_mem")));
-
-	int32 arg = PG_GETARG_INT32(0);
-	int a = 1;
-	int i,j;
-	clock_t start, end; 
-	double total_time;
-
-	start = clock();
-
-	for(i=0; i<100; i++){
-		void *empty_mem = palloc(1024);
-		memset(empty_mem,0,1024);
-	}
-
-	for(i=0;i<100000;i++){
-		for(j=0;j<100000;j++){
-			a = a + 1;
-			a = a - 1;
-		}
-	}
-
-	end = clock();
-	total_time = (double)(end - start) / CLOCKS_PER_SEC;
-	ereport(INFO,(errmsg("total_time:%f secs",total_time)));
-
-	PG_RETURN_INT32(arg);
-}
-
 //定义一个复数计算，包括乘法，加法，减法
 void Add_Complex(Complex * src1,Complex *src2,Complex *dst){
     dst->imagin=src1->imagin+src2->imagin;
