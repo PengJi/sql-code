@@ -11,7 +11,7 @@ PG_MODULE_MAGIC;
 /**
  * 测试并发查询个数
  *
- * select testmem(1) from test;
+ * select testconcur(1) from test;
  */
 PG_FUNCTION_INFO_V1(test_concur);
 Datum test_concur(PG_FUNCTION_ARGS){
@@ -42,7 +42,7 @@ Datum test_concur(PG_FUNCTION_ARGS){
 /**
  * 测试CPU
  *
- * select testmem(1) from test;
+ * select testcpu(1) from test;
  */
 PG_FUNCTION_INFO_V1(test_cpu);
 Datum test_cpu(PG_FUNCTION_ARGS){
@@ -68,7 +68,7 @@ Datum test_cpu(PG_FUNCTION_ARGS){
     double input[SIZE];
     Complex dst[SIZE];
     setInput(input,SIZE);
-    DFT(input, dst, SIZE);
+    //DFT(input, dst, SIZE);
     FFT(input, dst, SIZE);
 
     end = clock();

@@ -5,7 +5,7 @@ SRC_FFT = rg.c
 #all:test.fft
 
 rg.so:$(SRC_FFT)
-	gcc $(CXXFLAGS) -fpic -c $^
+	gcc $(CXXFLAGS) -fpic --std=c99 -c $^
 	gcc $(LDFLAGS) -shared -o $@ *.o
 
 .PHONY: clean
