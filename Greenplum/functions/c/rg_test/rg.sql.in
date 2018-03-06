@@ -1,3 +1,13 @@
+create or replace function testconcur(integer)
+returns int
+as '/home/gpadmin/sql_prac/Greenplum/functions/c/rg_test/rg', 'test_concur'
+language c strict;
+
+create or replace function testmem(integer)
+returns int
+as '/home/gpadmin/sql_prac/Greenplum/functions/c/rg_test/rg', 'test_mem'
+language c strict;
+
 create or replace function hello(integer)
 returns int
 as '/home/gpadmin/sql_prac/Greenplum/functions/c/rg_test/rg', 'hello'

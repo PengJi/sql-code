@@ -9,27 +9,46 @@ PG_MODULE_MAGIC;
 #endif
 
 /**
- * 
+ * 测试并发查询个数
  *
  */
 PG_FUNCTION_INFO_V1(hello);
-Datum (PG_FUNCTION_ARGS){
+Datum test_concur(PG_FUNCTION_ARGS){
+	ereport(INFO,(errmsg("test_concur")));
+
 	int32 arg = PG_GETARG_INT32(0);
-	int a = 1;
+	int a=1;
 	int i,j;
 
-	ereport(INFO,(errmsg("hello")));
-
-	for(i=0;i<10000;i++){
+	for(i=0;i<100000;i++){
 		for(j=0;j<10000;j++){
 			a = a + 1;
 			a = a - 1;
 		}
 	}
 
-	while(1){
-		a++;
-		a--;
+	ereport(INFO,(errmsg("a=%d",a)));
+
+	PG_RETURN_INT32(arg);
+}
+
+/**
+ * 测试内存
+ *
+ */
+PG_FUNCTION_INFO_V1(hello);
+Datum test_mem(PG_FUNCTION_ARGS){
+	ereport(INFO,(errmsg("test_mem")));
+
+	int32 arg = PG_GETARG_INT32(0);
+	int a = 1;
+	int i,j;
+
+	for(i=0;i<100000;i++){
+		for(j=0;j<10000;j++){
+			a = a + 1;
+			a = a - 1;
+		}
 	}
 
 	ereport(INFO,(errmsg("a=%d",a)));
@@ -59,10 +78,12 @@ hello(PG_FUNCTION_ARGS){
 		}
 	}
 
+	/*
 	while(1){
 		a++;
 		a--;
 	}
+	*/
 
 	ereport(INFO,(errmsg("a=%d",a)));
 
