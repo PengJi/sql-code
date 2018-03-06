@@ -9,7 +9,7 @@
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
-#define SIZE 1024
+#define SIZE 1024*8
 #define VALUE_MAX 1000
 
 //定义一个复数结构体

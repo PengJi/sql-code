@@ -67,9 +67,12 @@ Datum test_cpu(PG_FUNCTION_ARGS){
 
     double input[SIZE];
     Complex dst[SIZE];
-    setInput(input,SIZE);
-    //DFT(input, dst, SIZE);
-    FFT(input, dst, SIZE);
+
+	for(i=0; i<5; i++){
+    	setInput(input,SIZE);
+	    DFT(input, dst, SIZE);
+	    FFT(input, dst, SIZE);
+	}
 
     end = clock();
     total_time = (double)(end - start) / CLOCKS_PER_SEC;
@@ -185,7 +188,8 @@ void DFT(double * src,Complex * dst,int size){
         }
         dst[m].imagin=imagin;
         dst[m].real=real;
-       /* if(imagin>=0.0)
+       /* 
+		if(imagin>=0.0)
             printf("%lf+%lfj\n",real,imagin);
         else
             printf("%lf%lfj\n",real,imagin);
@@ -241,20 +245,22 @@ void IDFT(Complex *src,Complex *dst,int size){
 int FFT_remap(double * src,int size_n){
     if(size_n==1)
         return 0;
-    double * temp=(double *)palloc(sizeof(double)*size_n);
+    double * temp=(double *)malloc(sizeof(double)*size_n);
+
     for(int i=0;i<size_n;i++)
         if(i%2==0)
             temp[i/2]=src[i];
         else
             temp[(size_n+i)/2]=src[i];
+
     for(int i=0;i<size_n;i++)
         src[i]=temp[i];
+
     free(temp);
     FFT_remap(src, size_n/2);
     FFT_remap(src+size_n/2, size_n/2);
+
     return 1;
-
-
 }
 
 /**
@@ -279,13 +285,14 @@ void FFT(double * src,Complex * dst,int size_n){
     k=z;
     if(size_n!=(1<<k))
         exit(0);
-    Complex * src_com=(Complex*)palloc(sizeof(Complex)*size_n);
+    Complex * src_com=(Complex*)malloc(sizeof(Complex)*size_n);
     if(src_com==NULL)
         exit(0);
     for(int i=0;i<size_n;i++){
         src_com[i].real=src[i];
         src_com[i].imagin=0;
     }
+
     for(int i=0;i<k;i++){
         z=0;
         for(int j=0;j<size_n;j++){
@@ -306,7 +313,7 @@ void FFT(double * src,Complex * dst,int size_n){
         }
     
     }
-    
+
     /*
 	for(int i=0;i<size_n;i++)
     	if(src_com[i].imagin>=0.0){
@@ -320,6 +327,8 @@ void FFT(double * src,Complex * dst,int size_n){
 		dst[i].imagin=src_com[i].imagin;
 		dst[i].real=src_com[i].real;
 	}
+
+	free(src_com);
 	end=clock();
     printf("FFT use time :%lfs for Datasize of:%d\n",(double)(end-start)/CLOCKS_PER_SEC,size_n);
     
