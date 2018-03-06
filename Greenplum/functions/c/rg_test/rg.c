@@ -9,6 +9,35 @@ PG_MODULE_MAGIC;
 #endif
 
 /**
+ * 
+ *
+ */
+PG_FUNCTION_INFO_V1(hello);
+Datum (PG_FUNCTION_ARGS){
+	int32 arg = PG_GETARG_INT32(0);
+	int a = 1;
+	int i,j;
+
+	ereport(INFO,(errmsg("hello")));
+
+	for(i=0;i<10000;i++){
+		for(j=0;j<10000;j++){
+			a = a + 1;
+			a = a - 1;
+		}
+	}
+
+	while(1){
+		a++;
+		a--;
+	}
+
+	ereport(INFO,(errmsg("a=%d",a)));
+
+	PG_RETURN_INT32(arg);
+}
+
+/**
  * 测试在主节点上执行
  *
  * 只在主节点上执行
@@ -23,21 +52,16 @@ hello(PG_FUNCTION_ARGS){
 
 	ereport(INFO,(errmsg("hello")));
 
-	if (Gp_role == GP_ROLE_EXECUTE){
-		ereport(INFO,(errmsg("GP_ROLE_EXECUTE")));
-		a = a+1;
-	}else if(Gp_role == GP_ROLE_DISPATCH){
-		ereport(INFO,(errmsg("GP_ROLE_DISPATCH")));
-		a = a+2;
-	}else if(Gp_role == GP_ROLE_UTILITY){
-		ereport(INFO,(errmsg("GP_ROLE_UTILITY")));
-	}
-
 	for(i=0;i<10000;i++){
 		for(j=0;j<10000;j++){
 			a = a + 1;
 			a = a - 1;
 		}
+	}
+
+	while(1){
+		a++;
+		a--;
 	}
 
 	ereport(INFO,(errmsg("a=%d",a)));
