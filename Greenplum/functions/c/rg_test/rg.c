@@ -11,14 +11,19 @@ PG_MODULE_MAGIC;
 /**
  * 测试并发查询个数
  *
+ * select testmem(1) from test;
  */
 PG_FUNCTION_INFO_V1(test_concur);
 Datum test_concur(PG_FUNCTION_ARGS){
 	ereport(INFO,(errmsg("test_concur")));
 
 	int32 arg = PG_GETARG_INT32(0);
-	int a=1;
+	int a = 1;
 	int i,j;
+    clock_t start, end;
+    double total_time;
+
+	start = clock();
 
 	for(i=0;i<100000;i++){
 		for(j=0;j<100000;j++){
@@ -27,14 +32,48 @@ Datum test_concur(PG_FUNCTION_ARGS){
 		}
 	}
 
-	ereport(INFO,(errmsg("a=%d",a)));
+	end = clock();
+	total_time = (double)(end - start) / CLOCKS_PER_SEC;
+	ereport(INFO,(errmsg("total_time:%f secs",total_time)));
 
 	PG_RETURN_INT32(arg);
 }
 
 /**
+ * 测试CPU
+ *
+ * select testmem(1) from test;
+ */
+PG_FUNCTION_INFO_V1(test_cpu);
+Datum test_cpu(PG_FUNCTION_ARGS){
+    ereport(INFO,(errmsg("test_cpu")));
+
+    int32 arg = PG_GETARG_INT32(0);
+    int a = 1;
+    int i,j;
+    clock_t start, end;
+    double total_time;
+
+    start = clock();
+
+    for(i=0;i<100000;i++){
+        for(j=0;j<100000;j++){
+            a = a + 1;
+            a = a - 1;
+        }
+    }
+
+    end = clock();
+    total_time = (double)(end - start) / CLOCKS_PER_SEC;
+    ereport(INFO,(errmsg("total_time:%f secs",total_time)));
+
+    PG_RETURN_INT32(arg);
+}
+
+/**
  * 测试内存
  *
+ * select testmem(1) from test;
  */
 PG_FUNCTION_INFO_V1(test_mem);
 Datum test_mem(PG_FUNCTION_ARGS){
@@ -43,6 +82,15 @@ Datum test_mem(PG_FUNCTION_ARGS){
 	int32 arg = PG_GETARG_INT32(0);
 	int a = 1;
 	int i,j;
+	clock_t start, end; 
+	double total_time;
+
+	start = clock();
+
+	for(i=0; i<100; i++){
+		void *empty_mem = palloc(1024);
+		memset(empty_mem,0,1024);
+	}
 
 	for(i=0;i<100000;i++){
 		for(j=0;j<100000;j++){
@@ -51,8 +99,9 @@ Datum test_mem(PG_FUNCTION_ARGS){
 		}
 	}
 
-	void *empty_mem = palloc(256);
-	memset(empty_mem,0,256);
+	end = clock();
+	total_time = (double)(end - start) / CLOCKS_PER_SEC;
+	ereport(INFO,(errmsg("total_time:%f secs",total_time)));
 
 	PG_RETURN_INT32(arg);
 }

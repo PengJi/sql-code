@@ -3,6 +3,11 @@ returns int
 as '/home/gpadmin/sql_prac/Greenplum/functions/c/rg_test/rg', 'test_concur'
 language c strict;
 
+create or replace function testcpu(integer)
+returns int
+as '/home/gpadmin/sql_prac/Greenplum/functions/c/rg_test/rg', 'test_cpu'
+language c strict;
+
 create or replace function testmem(integer)
 returns int
 as '/home/gpadmin/sql_prac/Greenplum/functions/c/rg_test/rg', 'test_mem'
