@@ -1,39 +1,42 @@
 create or replace function testconcur(integer)
 returns int
-as '/home/gpadmin/sql_prac/Greenplum/functions/c/rg_test/rg', 'test_concur'
+as '/home/gpdba/sql_prac/Greenplum/functions/c/rg_test/rg', 'test_concur'
 language c strict;
 
 create or replace function testcpu(integer)
 returns int
-as '/home/gpadmin/sql_prac/Greenplum/functions/c/rg_test/rg', 'test_cpu'
+as '/home/gpdba/sql_prac/Greenplum/functions/c/rg_test/rg', 'test_cpu'
 language c strict;
 
 create or replace function hello(integer)
 returns int
-as '/home/gpadmin/sql_prac/Greenplum/functions/c/rg_test/rg', 'hello'
+as '/home/gpdba/sql_prac/Greenplum/functions/c/rg_test/rg', 'hello'
 language c strict;
 
 create or replace function hello_gprole(integer)
 returns int
-as '/home/gpadmin/sql_prac/Greenplum/functions/c/rg_test/rg', 'hello_gprole'
+as '/home/gpdba/sql_prac/Greenplum/functions/c/rg_test/rg', 'hello_gprole'
 language c strict;
 
 create or replace function addab(int,int)
 returns int
-as '/home/gpadmin/sql_prac/Greenplum/functions/c/rg_test/rg', 'add_ab'
+as '/home/gpdba/sql_prac/Greenplum/functions/c/rg_test/rg', 'add_ab'
 language c strict;
 
 create or replace function addfor(int)
 returns int
-as '/home/gpadmin/sql_prac/Greenplum/functions/c/rg_test/rg', 'add_for'
+as '/home/gpdba/sql_prac/Greenplum/functions/c/rg_test/rg', 'add_for'
 language c strict;
 
 create or replace function call_udf(int)
 returns int
-as '/home/gpadmin/sql_prac/Greenplum/functions/c/rg_test/rg', 'call_udf'
+as '/home/gpdba/sql_prac/Greenplum/functions/c/rg_test/rg', 'call_udf'
 language c strict;
 
 -- 查询sql在每个segment上的进程
+-- create language plpythonu;
+-- 查看
+-- select * from all_seg_sql;
 create or replace view v_active_sql as
 select pg_stat_activity.procpid, pg_stat_activity.sess_id, pg_stat_activity.usename, 
 pg_stat_activity.waiting as w, to_char(pg_stat_activity.query_start,'mm-dd hh24:mi:ss'::text) as query_start,
