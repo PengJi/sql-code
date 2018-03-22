@@ -32,3 +32,27 @@ create or replace function call_udf(int)
 returns int
 as '/home/gpadmin/sql_prac/Greenplum/functions/c/rg_test/rg', 'call_udf'
 language c strict;
+
+-- 查询sql在每个segment上的进程
+create or replace view v_active_sql as
+select pg_stat_activity.procpid, pg_stat_activity.sess_id, pg_stat_activity.usename, 
+pg_stat_activity.waiting as w, to_char(pg_stat_activity.query_start,'mm-dd hh24:mi:ss'::text) as query_start,
+to_char(now() - pg_stat_activity.query_start,'hh24:mi'::text) as exec, pg_stat_activity.current_query
+from pg_stat_activity
+where pg_stat_activity.current_query <> '<IDLE>'::text
+order by pg_stat_activity.datname, to_char(pg_stat_activity.query_start,'yyyymmdd hh24:mi:ss'::text);
+
+create or replace function public.hostip()
+returns text
+as $$
+import socket
+return socket.gethostbyname(socket.gethostname())
+$$ language plpythonu;
+
+create or replace view public.all_seg_sql
+as 
+select hostip(),
+current_setting(replace('port'|| current_query,current_query,'')) as port,
+current_setting(replace('gp_contentid' || current_query,current_query,'')) as content,*
+from gp_dist_random('v_active_sql')
+where current_query <> '<IDLE>';
