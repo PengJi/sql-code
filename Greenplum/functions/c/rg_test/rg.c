@@ -94,7 +94,7 @@ Datum test_io(PG_FUNCTION_ARGS){
     //测试写
     system("dd if=/dev/zero of=/home/gpdba/test1 oflag=direct count=128 bs=1M");
     //测试读
-    system("dd if=/home/gpadmin/test of=/dev/null iflag=direct count=128 bs=1M");
+    system("dd if=/home/gpdba/test1 of=/dev/null iflag=direct count=128 bs=1M");
 
     PG_RETURN_INT32(arg);
 }

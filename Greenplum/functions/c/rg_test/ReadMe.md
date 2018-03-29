@@ -1,1 +1,1 @@
-利用自定义函数测试resource groups
+利用自定义函数测试Greenplum resource groups
