@@ -84,6 +84,9 @@ Datum test_cpu(PG_FUNCTION_ARGS){
 /**
  * 测试I/O带宽
  *
+ * 主节点
+ * select testio(1);
+ * 所有节点
  * select testio(1) from test;
  */
 PG_FUNCTION_INFO_V1(test_io);
@@ -95,6 +98,39 @@ Datum test_io(PG_FUNCTION_ARGS){
     system("dd if=/dev/zero of=/home/gpdba/test1 oflag=direct count=128 bs=1M");
     //测试读
     system("dd if=/home/gpdba/test1 of=/dev/null iflag=direct count=128 bs=1M");
+
+    PG_RETURN_INT32(arg);
+}
+
+/**
+ * 测试I/O带宽
+ *
+ * 主节点
+ * select testioarg(1);
+ * 所有节点
+ * select testioarg(1) from test;
+ */
+PG_FUNCTION_INFO_V1(test_io_arg);
+Datum test_io_arg(PG_FUNCTION_ARGS){
+    ereport(INFO,(errmsg("test_io")));
+    int32 arg = PG_GETARG_INT32(0);
+    char f[10];
+    sprintf(f,"%d",arg);
+
+    char sh_write[100];
+    strcpy(sh_write,"dd if=/dev/zero of=/home/gpdba/test");
+    strcat(sh_write,f);
+    strcat(sh_write," oflag=direct count=128 bs=1M");
+
+    char sh_read[100];
+    strcpy(sh_read,"dd if=/home/gpdba/test");
+    strcat(sh_read,f);
+    strcat(sh_read," of=/dev/null iflag=direct count=128 bs=1M");
+
+    //测试写
+    system(sh_write);
+    //测试读
+    system(sh_read);
 
     PG_RETURN_INT32(arg);
 }
