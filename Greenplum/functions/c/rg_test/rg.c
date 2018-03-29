@@ -85,9 +85,9 @@ Datum test_cpu(PG_FUNCTION_ARGS){
  * 测试I/O带宽
  *
  * 主节点
- * select testio(1);
+ * select testioarg(1);
  * 所有节点
- * select testio(1) from test;
+ * select testioarg(1) from test;
  */
 PG_FUNCTION_INFO_V1(test_io);
 Datum test_io(PG_FUNCTION_ARGS){
