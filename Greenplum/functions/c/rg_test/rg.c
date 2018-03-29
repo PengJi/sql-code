@@ -81,6 +81,22 @@ Datum test_cpu(PG_FUNCTION_ARGS){
     PG_RETURN_INT32(arg);
 }
 
+/**
+ * 测试I/O带宽
+ *
+ * select testio(1) from test;
+ */
+PG_FUNCTION_INFO_V1(test_io);
+Datum test_io(PG_FUNCTION_ARGS){
+    ereport(INFO,(errmsg("test_io")));
+    int32 arg = PG_GETARG_INT32(0);
+
+    //测试写
+    system("dd if=/dev/zero of=/home/gpdba/test1 oflag=direct count=1024 bs=1M");
+
+    PG_RETURN_INT32(arg);
+}
+
 //定义一个复数计算，包括乘法，加法，减法
 void Add_Complex(Complex * src1,Complex *src2,Complex *dst){
     dst->imagin=src1->imagin+src2->imagin;

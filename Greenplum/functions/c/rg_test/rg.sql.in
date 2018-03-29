@@ -8,6 +8,11 @@ returns int
 as '/home/gpdba/sql_prac/Greenplum/functions/c/rg_test/rg', 'test_cpu'
 language c strict;
 
+create or replace function testio(integer)
+returns int
+as '/home/gpdba/sql_prac/Greenplum/functions/c/rg_test/rg', 'test_io'
+language c strict;
+
 create or replace function hello(integer)
 returns int
 as '/home/gpdba/sql_prac/Greenplum/functions/c/rg_test/rg', 'hello'
