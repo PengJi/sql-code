@@ -257,10 +257,11 @@ int judge_seg(){
  *
  * @return     { description_of_the_return_value }
  */
-int cost_cpu(int from_segid, int to_segid, int size){
-	/*
-	获取CPU使用率
-	*/
+int cost_cpu(segid){
+	//得到每个segment的CPU负载
+	
+	//得到CPU处理记录耗费
+
 	return 1;
 }
 
@@ -271,18 +272,24 @@ int cost_cpu(int from_segid, int to_segid, int size){
  *
  * @return     { description_of_the_return_value }
  */
-int cost_io(int from_segid, int to_segid, int size){
+int cost_io(segid){
+	//得到每个segment的I/O负载
+	
+	//得到IO处理记录的时间
+
 	return 1;
 }
 
 /**
- * @brief      { function_description }
+ * @brief      计算网络代价
  *
  * @param[in]  segid  The segid
  *
  * @return     { description_of_the_return_value }
  */
-int cost_net(int from_segid, int to_segid, int size){
+int cost_net(int from_segid, int to_segid){
+	
+
 	retunr 1;
 }
 
