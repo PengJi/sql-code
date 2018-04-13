@@ -115,7 +115,7 @@ int main()
 
 	//计算数据分布
 	int seg[16]={0};
-	run_master(seg);
+	get_distribution(seg);
 	for(int i=0;i<16;i++){
 		printf("%d - %d\n",i,seg[i]);
 		if(seg[i] == 0){
