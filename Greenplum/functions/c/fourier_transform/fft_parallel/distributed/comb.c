@@ -123,6 +123,10 @@ int main()
 		}
 	}
 
+	for(int i=0; i<idx; i++){
+		printf("%d\n",ini[idx]);
+	}
+
 	//得到组合
 	int r[MAX_LENGTH];
 	int n=idx, m=2;
