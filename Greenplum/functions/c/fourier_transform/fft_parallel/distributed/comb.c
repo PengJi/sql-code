@@ -5,14 +5,15 @@
 
 //求组合
 #define MAX_LENGTH 20
-int c=0;
-int result[13000][MAX_LENGTH];
+int c=0; //计数
+int result[13000][MAX_LENGTH]; //存储组合结果
 
 /**
  * [run_master description]
- * @return [description]
+ * @param  seg [description]
+ * @return     [description]
  */
-int run_master(int seg[]){
+int get_distribution(int seg[]){
     FILE *fstream=NULL;      
     char buff[100];
 	int seg_id,seg_count,count_num;
@@ -55,8 +56,8 @@ int run_master(int seg[]){
 
 /**
  * 递归求组合
- * @param ori   [description]
- * @param res   [description]
+ * @param ori   原始集合
+ * @param res   组合
  * @param n     初始集合总数
  * @param m     每个组合的个数
  * @param k     初始集合中当前处理的位置索引，ori[k]
@@ -83,16 +84,20 @@ void combination(int ori[], int res[], int n, int m, int k, int index)
     }
 }
 
-int get_comb(){
-	int a[MAX_LENGTH]; //存储初始字符串
-	int r[MAX_LENGTH]; //存储组合结果
-	int n=16,m=8;
-
+/**
+ * 得到组合结果
+ * @param  ini 存储初始字符串
+ * @param  r   存储临时组合结果
+ * @param  n   [description]
+ * @param  m   [description]
+ * @return     [description]
+ */
+int get_comb(int ini[],int r[],int n, int m){
 	for(int i=0;i<n;i++){
-		a[i]=i+1;
+		ini[i]=i+1;
 	}
 
-    combination(a,r,n,m, 0, 0);
+    combination(ini,r,n,m, 0, 0);
 
 	for(int i=0; i<c; i++){
 		for(int j=0; j<m; j++){
@@ -105,13 +110,23 @@ int get_comb(){
 
 int main()
 {
-	//get_comb();
+	int ini[MAX_LENGTH];
+	int idx = 0;
 
+	//计算数据分布
 	int seg[16]={0};
 	run_master(seg);
 	for(int i=0;i<16;i++){
 		printf("%d - %d\n",i,seg[i]);
+		if(seg[i] == 0){
+			ini[idx++] = i; 
+		}
 	}
+
+	//得到组合
+	int r[MAX_LENGTH];
+	int n=idx, m=2;
+	get_comb(ini,r,n,m);
 
     return 0;
 }
