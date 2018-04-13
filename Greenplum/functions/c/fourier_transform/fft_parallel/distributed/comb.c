@@ -19,8 +19,7 @@ int run_master(int seg[]){
 
 	//求记录个数
     memset(buff,0,sizeof(buff));
-	if((fstream=popen("psql -d testDB -c 'select count(*) from 
-		(select gp_segment_id,count(*) from test2 group by gp_segment_id) as foo;'","r")) == NULL){
+	if((fstream=popen("psql -d testDB -c 'select count(*) from (select gp_segment_id,count(*) from test2 group by gp_segment_id) as foo;'","r")) == NULL){
 		fprintf(stderr,"execute command failed: %s",strerror(errno));
 		return -1;
 	}
