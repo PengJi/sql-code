@@ -4,6 +4,8 @@
 #include <errno.h>
 
 #define MAX_LENGTH 20
+int c=0;
+int result[13000][MAX_LENGTH];
 
 /**
  * 递归求组合
@@ -36,9 +38,6 @@ void combination(int ori[], int res[], int n, int m, int k, int index)
 }
 
 int get_comb(){
-	int c=0;
-	int result[13000][MAX_LENGTH];
-
 	int a[MAX_LENGTH]; //存储初始字符串
 	int r[MAX_LENGTH]; //存储组合结果
 	int n=16,m=8;
@@ -106,6 +105,8 @@ int run_master(){
 int main()
 {
 	get_comb();
+
+	run_master();
 
     return 0;
 }
