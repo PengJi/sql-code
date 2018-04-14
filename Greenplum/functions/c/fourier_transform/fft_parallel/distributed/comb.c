@@ -8,26 +8,40 @@
 int c=0; //计数
 int result[13000][MAX_LENGTH]; //存储组合结果
 
-/**
- * [run_master description]
- * @param  seg [description]
- * @return     [description]
- */
-int get_distribution(int seg[],int segdata[]){
-    FILE *fstream=NULL;      
-    char buff[100];
-	int seg_id,seg_count,count_num,count_data=0;
+struct Segdata{
+	int seg_id;
+	int seg_count;
+}segdata;
 
-	//求记录个数
-    memset(buff,0,sizeof(buff));
+int get_row_num(){
+	FILE *fstream=NULL;
+	char buff[100];
+	int count_num;
+	memset(buff,0,sizeof(buff));
+
 	if((fstream=popen("psql -d testDB -c 'select count(*) from (select gp_segment_id,count(*) from test2 group by gp_segment_id) as foo;'","r")) == NULL){
 		fprintf(stderr,"execute command failed: %s",strerror(errno));
 		return -1;
 	}
+
 	while(fgets(buff, sizeof(buff), fstream) != NULL){
 		sscanf(buff, "%d", &count_num);
 		//printf("%d\n", count_num);
 	}
+
+    pclose(fstream);
+	return count_num;
+}
+
+/**
+ * 得到数据分布
+ * @param  seg 存储每个segment的数据条数
+ * @return     存有数据的segment个数
+ */
+int get_distribution(int cnt, int seg[], struct Segdata segs[]){
+    FILE *fstream=NULL;      
+    char buff[100];
+	int seg_id,seg_count,count_data=0;
 
 	//求记录
 	memset(buff,0,sizeof(buff));
@@ -35,7 +49,7 @@ int get_distribution(int seg[],int segdata[]){
         fprintf(stderr,"execute command failed: %s",strerror(errno));
         return -1;
 	}
-	for(int i=0; i<count_num+2; i++){
+	for(int i=0; i<cnt+2; i++){
 		fgets(buff, sizeof(buff), fstream);
 		//printf("%s",buff);
 		if(i<2) continue;
@@ -43,16 +57,13 @@ int get_distribution(int seg[],int segdata[]){
 		//printf("%d,%d\n",seg_id,seg_count);
 		seg[seg_id] = seg_count;
 		if(seg_count != 0){
-			segdata[count_data] = 
+			segs[count_data].seg_id = seg_id;
+			segs[count_data].seg_count = seg_count;
+			count_data++;
 		}
 	}
 
     pclose(fstream);
-
-	// for(int i=0;i<16;i++){
-	// 	printf("%d - %d\n",i,seg[i]);
-	// }
-
     return 0;     
 }
 
@@ -109,12 +120,16 @@ int get_comb(int ini[],int r[],int n, int m){
 int main()
 {
 	int ini[MAX_LENGTH];
-	int idx = 0;
+	int idx = 0,count_num;
+	struct Segdata *segs=NULL;
 
 	//计算数据分布
 	int seg[16]={0};
 	printf("数据分布:\n");
-	get_distribution(seg);
+	count_num = get_row_num();
+
+	segs = (struct Segdata*) malloc(sizeof(segdata)*count_num);
+	get_distribution(count_num,seg,segs);
 	for(int i=0;i<16;i++){
 		printf("%d - %d\n",i,seg[i]);
 		if(seg[i] == 0){
@@ -128,6 +143,11 @@ int main()
 		printf("%d\n",ini[j]);
 	}
 	*/
+
+	printf("存有数据segment:\n");
+	for(int i=0; i<count_num; i++){
+		printf("%d,%d\n",segs[i].seg_id, segs[i].seg_count);
+	}
 
 	//得到组合
 	int r[MAX_LENGTH];
