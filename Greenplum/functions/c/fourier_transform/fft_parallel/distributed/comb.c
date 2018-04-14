@@ -13,6 +13,10 @@ struct Segdata{
 	int seg_count;
 }segdata;
 
+/**
+ * 得到存有数据的segment个数
+ * @return 返回存有数据的segment个数
+ */
 int get_row_num(){
 	FILE *fstream=NULL;
 	char buff[100];
@@ -35,8 +39,10 @@ int get_row_num(){
 
 /**
  * 得到数据分布
- * @param  seg 存储每个segment的数据条数
- * @return     存有数据的segment个数
+ * @param  cnt  存有数据的segment个数
+ * @param  seg  存储每个segment的数据条数
+ * @param  segs 存有数据的segment
+ * @return      
  */
 int get_distribution(int cnt, int seg[], struct Segdata segs[]){
     FILE *fstream=NULL;      
@@ -101,8 +107,8 @@ void combination(int ori[], int res[], int n, int m, int k, int index)
  * 得到组合结果
  * @param  ini 存储初始字符串
  * @param  r   存储临时组合结果
- * @param  n   [description]
- * @param  m   [description]
+ * @param  n   总个数
+ * @param  m   每个组合中的个数
  * @return     [description]
  */
 int get_comb(int ini[],int r[],int n, int m){
@@ -119,6 +125,83 @@ int get_comb(int ini[],int r[],int n, int m){
 	c = 0;
 	
 	return 0;
+}
+
+/**
+ * 确定数据分布
+ * @return [description]
+ */
+int judge_seg(){
+	return 1;
+}
+
+/**
+ * 计算每个segment的cpu代价
+ * @param  segid [description]
+ * @return       [description]
+ */
+int cost_cpu(segid){
+	//得到每个segment的CPU负载
+	
+	//得到CPU处理记录耗费
+
+	return 1;
+}
+
+/**
+ * 计算每个segment的io代价
+ * @param  segid [description]
+ * @return       [description]
+ */
+int cost_io(segid){
+	//得到每个segment的I/O负载
+	
+	//得到IO处理记录的时间
+
+	return 1;
+}
+
+/**
+ * 计算网络代价
+ * @param  from_segid [description]
+ * @param  to_segid   [description]
+ * @return            [description]
+ */
+int cost_net(int from_segid, int to_segid){
+	
+
+	retunr 1;
+}
+
+/**
+ * 计算任务的平均等待时间
+ * @param  from_segid [description]
+ * @param  to_segid   [description]
+ * @return            [description]
+ */
+int cost_wait(int from_segid, int to_segid){
+	/*
+	分析每个segment的执行日志，判断任务的平均等待时间
+	*/
+	return 1;
+}
+
+/**
+ * 计算总代价
+ * @param  from_segid [description]
+ * @param  to_segid   [description]
+ * @return            [description]
+ */
+int cost_sum(int from_segid,int to_segid){
+
+	return cost_cpu() + cost_io() + cost_net() + cost_wait(); 
+}
+
+/**
+ * 迁移数据
+ * @param segid [description]
+ */
+void adjust_seg(int segid){
 }
 
 int main()
