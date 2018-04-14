@@ -13,10 +13,10 @@ int result[13000][MAX_LENGTH]; //存储组合结果
  * @param  seg [description]
  * @return     [description]
  */
-int get_distribution(int seg[]){
+int get_distribution(int seg[],int segdata[]){
     FILE *fstream=NULL;      
     char buff[100];
-	int seg_id,seg_count,count_num;
+	int seg_id,seg_count,count_num,count_data=0;
 
 	//求记录个数
     memset(buff,0,sizeof(buff));
@@ -38,10 +38,12 @@ int get_distribution(int seg[]){
 	for(int i=0; i<count_num+2; i++){
 		fgets(buff, sizeof(buff), fstream);
 		//printf("%s",buff);
+		if(i<2) continue;
 		sscanf(buff,"%d | %d",&seg_id,&seg_count);
 		//printf("%d,%d\n",seg_id,seg_count);
+		seg[seg_id] = seg_count;
 		if(seg_count != 0){
-			seg[seg_id] = seg_count;
+			segdata[count_data] = 
 		}
 	}
 
@@ -93,10 +95,6 @@ void combination(int ori[], int res[], int n, int m, int k, int index)
  * @return     [description]
  */
 int get_comb(int ini[],int r[],int n, int m){
-	for(int i=0;i<n;i++){
-		ini[i]=i+1;
-	}
-
     combination(ini,r,n,m, 0, 0);
 
 	for(int i=0; i<c; i++){
@@ -115,6 +113,7 @@ int main()
 
 	//计算数据分布
 	int seg[16]={0};
+	printf("数据分布:\n");
 	get_distribution(seg);
 	for(int i=0;i<16;i++){
 		printf("%d - %d\n",i,seg[i]);
@@ -123,13 +122,17 @@ int main()
 		}
 	}
 
-	for(int i=0; i<idx; i++){
-		printf("%d\n",ini[idx]);
+	/*
+	printf("idx=%d\n",idx);
+	for(int j=0; j<idx; j++){
+		printf("%d\n",ini[j]);
 	}
+	*/
 
 	//得到组合
 	int r[MAX_LENGTH];
 	int n=idx, m=2;
+	printf("组合:\n");
 	get_comb(ini,r,n,m);
 
     return 0;
