@@ -13,10 +13,6 @@ struct Segdata{
 	int seg_count;
 }segdata;
 
-/**
- * 得到存有数据的segment总数
- * @return 返回存有数据的segment总数
- */
 int get_row_num(){
 	FILE *fstream=NULL;
 	char buff[100];
@@ -39,10 +35,8 @@ int get_row_num(){
 
 /**
  * 得到数据分布
- * @param  cnt  存有记录的segment个数
- * @param  seg  保存所有的segment分布
- * @param  segs 保存存有记录的segment
- * @return      [description]
+ * @param  seg 存储每个segment的数据条数
+ * @return     存有数据的segment个数
  */
 int get_distribution(int cnt, int seg[], struct Segdata segs[]){
     FILE *fstream=NULL;      
@@ -167,8 +161,7 @@ int main()
 		printf("%d,%d\n",segs[i].seg_id, segs[i].seg_count);
 		printf("组合:\n");
 		ini[idx] = segs[i].seg_id;
-		for(int j=0;j<idx+1;j++)
-			printf("%d\n", ini[j]);
+		//for(int j=0;j<idx+1;j++) printf("%d\n", ini[j]);
 		get_comb(ini,r,n,m);
 	}
 
