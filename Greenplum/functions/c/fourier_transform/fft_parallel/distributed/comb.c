@@ -114,13 +114,17 @@ int get_comb(int ini[],int r[],int n, int m){
 		}
 		printf("\n");
 	}
-	printf("The sum of combination: %d\n",c);	
+	printf("The sum of combination: %d\n",c);
+
+	c = 0;
+	
+	return 0;
 }
 
 int main()
 {
 	int ini[MAX_LENGTH];
-	int idx = 0,count_num;
+	int idx=0, count_num;
 	struct Segdata *segs=NULL;
 
 	//计算数据分布
@@ -149,11 +153,18 @@ int main()
 		printf("%d,%d\n",segs[i].seg_id, segs[i].seg_count);
 	}
 
-	//得到组合
+	//对每个存有的记录的segment求组合
 	int r[MAX_LENGTH];
-	int n=idx, m=2;
-	printf("组合:\n");
-	get_comb(ini,r,n,m);
+	int n=idx+1,m=count_num-1;
+	for(int i=0; i<count_num; i++){
+		printf("针对记录:\n");
+		printf("%d,%d\n",segs[i].seg_id, segs[i].seg_count);
+		printf("组合:\n");
+		ini[idx] = segs[i].seg_id;
+		for(int j=0;j<idx+1;j++)
+			printf("%d\n", ini[j]);
+		get_comb(ini,r,n,m);
+	}
 
     return 0;
 }
