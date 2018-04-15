@@ -1,4 +1,4 @@
-﻿#include "comb.h"
+#include "comb.h"
 
 //求组合
 #define MAX_LENGTH 20
