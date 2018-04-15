@@ -1,13 +1,13 @@
 #include "comb.h"
 
-//æ±‚ç»„åˆ
+//Çó×éºÏ
 #define MAX_LENGTH 20
-int c=0; //è®¡æ•°
-int result[13000][MAX_LENGTH]; //å­˜å‚¨ç»„åˆç»“æœ
+int c=0; //¼ÆÊı£¬×éºÏÊı
+int result[13000][MAX_LENGTH]; //×îÖÕ½á¹û£¬´æ´¢ËùÓĞ×éºÏ½á¹û
 
 /**
- * å¾—åˆ°å­˜æœ‰æ•°æ®çš„segmentä¸ªæ•°
- * @return è¿”å›å­˜æœ‰æ•°æ®çš„segmentä¸ªæ•°
+ * µÃµ½´æÓĞÊı¾İµÄsegment¸öÊı
+ * @return ·µ»Ø´æÓĞÊı¾İµÄsegment¸öÊı
  */
 int get_row_num(){
 	FILE *fstream=NULL;
@@ -30,10 +30,34 @@ int get_row_num(){
 }
 
 /**
- * å¾—åˆ°æ•°æ®åˆ†å¸ƒ
- * @param  cnt  å­˜æœ‰æ•°æ®çš„segmentä¸ªæ•°
- * @param  seg  å­˜å‚¨æ¯ä¸ªsegmentçš„æ•°æ®æ¡æ•°
- * @param  segs å­˜æœ‰æ•°æ®çš„segment
+ * µÃµ½segidµÄ¼ÇÂ¼Êı
+ * @return ·µ»ØsegidµÄ¼ÇÂ¼Êı
+ */
+int get_row(int segid){
+	FILE *fstream=NULL;
+	char buff[100];
+	int count_num;
+	memset(buff,0,sizeof(buff));
+
+	if((fstream=popen("psql -d testDB -c 'select count(*) from test2 where gp_segment_id=4'","r")) == NULL){
+		fprintf(stderr,"execute command failed: %s",strerror(errno));
+		return -1;
+	}
+
+	while(fgets(buff, sizeof(buff), fstream) != NULL){
+		sscanf(buff, "%d", &count_num);
+		printf("%d\n",count_num);
+	}
+
+    pclose(fstream);
+	return count_num;
+}
+
+/**
+ * µÃµ½Êı¾İ·Ö²¼
+ * @param  cnt  ´æÓĞÊı¾İµÄsegment¸öÊı
+ * @param  seg  ´æ´¢Ã¿¸ösegmentµÄÊı¾İÌõÊı
+ * @param  segs ´æÓĞÊı¾İµÄsegment
  * @return      
  */
 int get_distribution(int cnt, int seg[], struct Segdata segs[]){
@@ -41,7 +65,7 @@ int get_distribution(int cnt, int seg[], struct Segdata segs[]){
     char buff[100];
 	int seg_id,seg_count,count_data=0;
 
-	//æ±‚è®°å½•
+	//Çó¼ÇÂ¼
 	memset(buff,0,sizeof(buff));
     if((fstream=popen("psql -d testDB -c 'select gp_segment_id,count(*) from test2 group by gp_segment_id;'","r")) == NULL){
         fprintf(stderr,"execute command failed: %s",strerror(errno));
@@ -66,17 +90,17 @@ int get_distribution(int cnt, int seg[], struct Segdata segs[]){
 }
 
 /**
- * é€’å½’æ±‚ç»„åˆ
- * @param ori   åŸå§‹é›†åˆ
- * @param res   ç»„åˆ
- * @param n     åˆå§‹é›†åˆæ€»æ•°
- * @param m     æ¯ä¸ªç»„åˆçš„ä¸ªæ•°
- * @param k     åˆå§‹é›†åˆä¸­å½“å‰å¤„ç†çš„ä½ç½®ç´¢å¼•ï¼Œori[k]
- * @param index æ‰€æ±‚ç»„åˆç»“æœæ•°æ®çš„ç´¢å¼•ï¼Œres[index]
+ * µİ¹éÇó×éºÏ
+ * @param ori   Ô­Ê¼¼¯ºÏ
+ * @param res   ×éºÏ
+ * @param n     ³õÊ¼¼¯ºÏ×ÜÊı
+ * @param m     Ã¿¸ö×éºÏµÄ¸öÊı
+ * @param k     ³õÊ¼¼¯ºÏÖĞµ±Ç°´¦ÀíµÄÎ»ÖÃË÷Òı£¬ori[k]
+ * @param index ËùÇó×éºÏ½á¹ûÊı¾İµÄË÷Òı£¬res[index]
  */
 void combination(int ori[], int res[], int n, int m, int k, int index){
     int i;
-    if(index == m){ //è¾“å‡ºç»„åˆç»“æœ
+    if(index == m){ //Êä³ö×éºÏ½á¹û
         for(i = 0; i < m; ++i){
 			//printf("%d ", res[i]);
 			result[c][i] = res[i];
@@ -90,52 +114,51 @@ void combination(int ori[], int res[], int n, int m, int k, int index){
 
     for(i = k; i < n; ++i){
         res[index] = ori[i];
-        combination(ori,res,n, m, i + 1, index + 1);//æ³¨æ„ç¬¬ä¸‰ä¸ªå‚æ•°æ˜¯i+1
+        combination(ori,res,n, m, i + 1, index + 1);//×¢ÒâµÚÈı¸ö²ÎÊıÊÇi+1
     }
 }
 
 /**
- * å¾—åˆ°ç»„åˆç»“æœ
- * @param  ini å­˜å‚¨åˆå§‹å­—ç¬¦ä¸²
- * @param  r   å­˜å‚¨ä¸´æ—¶ç»„åˆç»“æœ
- * @param  n   æ€»ä¸ªæ•°
- * @param  m   æ¯ä¸ªç»„åˆä¸­çš„ä¸ªæ•°
+ * µÃµ½×éºÏ½á¹û
+ * @param  ini ´æ´¢³õÊ¼×Ö·û´®
+ * @param  r   ´æ´¢ÁÙÊ±×éºÏ½á¹û
+ * @param  n   ×Ü¸öÊı
+ * @param  m   Ã¿¸ö×éºÏÖĞµÄ¸öÊı
  * @return     [description]
  */
 int get_comb(int ini[],int r[],int n, int m){
     combination(ini,r,n,m, 0, 0);
 
-	for(int i=0; i<c; i++){
-		for(int j=0; j<m; j++){
+	for(int i=0; i<c; i++){ //Ò»¹²ÓĞcÖÖ×éºÏ
+		for(int j=0; j<m; j++){ //Ã¿ÖÖ×éºÏÖĞÓĞm¸öÏî
 			printf("%d ",result[i][j]);
 		}
 		printf("\n");
 	}
 	printf("The sum of combination: %d\n",c);
-
 	c = 0;
 	
 	return 0;
 }
 
 /**
- * ç¡®å®šæ•°æ®åˆ†å¸ƒ
+ * È·¶¨Êı¾İ·Ö²¼
  * @return [description]
  */
 int judge_seg(){
 	int ini[MAX_LENGTH];
 	int idx=0, count_num;
-	struct Segdata *segs=NULL;
+	struct Segdata *segs=NULL; //Êı×é£¬´æ´¢ËùÓĞº¬ÓĞ¼ÇÂ¼µÄsegment
 
 	struct timeval start_total, end_total;
 	struct timeval start, end;
 	unsigned long duration,duration_total;
 	gettimeofday(&start_total,NULL);
 
-	//è®¡ç®—æ•°æ®åˆ†å¸ƒ
+	//¼ÆËãÊı¾İ·Ö²¼
 	gettimeofday(&start,NULL);
 	int seg[16]={0};
-	printf("æ•°æ®åˆ†å¸ƒ:\n");
+	printf("Êı¾İ·Ö²¼:\n");
 	count_num = get_row_num();
 
 	segs = (struct Segdata*) malloc(sizeof(segdata)*count_num);
@@ -147,7 +170,7 @@ int judge_seg(){
 		}
 	}
 	gettimeofday(&end,NULL);
-	duration = 1000000*(end.tv_sec-start.tv_sec)+ end.tv_usec-start.tv_usec;
+	duration = 1000000*(end.tv_sec-start.tv_sec) + end.tv_usec-start.tv_usec;
 	printf("%ld ms\n",duration/1000);
 
 	/*
@@ -157,23 +180,25 @@ int judge_seg(){
 	}
 	*/
 
-	printf("å­˜æœ‰æ•°æ®çš„segment:\n");
+	printf("´æÓĞÊı¾İµÄsegment:\n");
 	for(int i=0; i<count_num; i++){
 		printf("%d,%d\n",segs[i].seg_id, segs[i].seg_count);
 	}
 
-	//å¯¹æ¯ä¸ªå­˜æœ‰è®°å½•çš„segmentæ±‚ç»„åˆ
-	int r[MAX_LENGTH];
+	//¶ÔÃ¿¸ö´æÓĞ¼ÇÂ¼µÄsegmentÇó×éºÏ
+	int r[MAX_LENGTH]; //´æ´¢µİ¹é¹ı³ÌÖĞµÄÖĞ¼ä½á¹û
 	int n=idx+1,m=count_num-1;
-	for(int i=0; i<count_num; i++){
-		printf("é’ˆå¯¹è®°å½•:\n");
+	for(int i=0; i<count_num; i++){ //¶ÔÃ¿¸ö´æÓĞ¼ÇÂ¼µÄsegmentÑ­»·
+		printf("Õë¶Ô¼ÇÂ¼:\n");
 		printf("%d,%d\n",segs[i].seg_id, segs[i].seg_count);
-		printf("ç»„åˆ:\n");
-		ini[idx] = segs[i].seg_id; //è¯¥segmentä¸­å­˜æœ‰è®°å½•
+		printf("×éºÏ:\n");
+		ini[idx] = segs[i].seg_id; //¸ÃsegmentÖĞ´æÓĞ¼ÇÂ¼
 
-		//ä¾æ¬¡æ±‚ç»„åˆ
+		//ÒÀ´ÎÇó×éºÏ
 		for(int j=1; j<=n; j++){
+			printf("current gp_segment_id: %d\n",segs[i].seg_id);
 			get_comb(ini,r,n,j);
+			break;
 		}
 
 		//for(int j=0;j<idx+1;j++) printf("%d\n", ini[j]);
@@ -181,64 +206,66 @@ int judge_seg(){
 	}
 
 	gettimeofday(&end_total,NULL);
-	duration_total = 1000000*(end_total.tv_sec-start_total.tv_sec)+ end_total.tv_usec-start_total.tv_usec;
+	duration_total = 1000000*(end_total.tv_sec-start_total.tv_sec) + end_total.tv_usec-start_total.tv_usec;
 	printf("%ld ms.\n",duration_total/1000);
 
 	return 0;
 }
 
 /**
- * è®¡ç®—æ¯ä¸ªsegmentçš„cpuä»£ä»·
+ * ¼ÆËãÃ¿¸ösegmentµÄcpu´ú¼Û
  * @param  segid [description]
  * @return       [description]
  */
 int cost_cpu(segid){
-	//å¾—åˆ°æ¯ä¸ªsegmentçš„CPUè´Ÿè½½
+	//µÃµ½Ã¿¸ösegmentµÄCPU¸ºÔØ
 	
-	//å¾—åˆ°CPUå¤„ç†è®°å½•è€—è´¹
+	//µÃµ½CPU´¦Àí¼ÇÂ¼ºÄ·Ñ
 
 	return 0;
 }
 
 /**
- * è®¡ç®—æ¯ä¸ªsegmentçš„ioä»£ä»·
+ * ¼ÆËãÃ¿¸ösegmentµÄio´ú¼Û
  * @param  segid [description]
  * @return       [description]
  */
 int cost_io(segid){
-	//å¾—åˆ°æ¯ä¸ªsegmentçš„I/Oè´Ÿè½½
+	//µÃµ½Ã¿¸ösegmentµÄI/O¸ºÔØ
 	
-	//å¾—åˆ°IOå¤„ç†è®°å½•çš„æ—¶é—´
+	//µÃµ½IO´¦Àí¼ÇÂ¼µÄÊ±¼ä
 
 	return 0;
 }
 
 /**
- * è®¡ç®—ç½‘ç»œä»£ä»·
+ * ¼ÆËãÍøÂç´ú¼Û
  * @param  from_segid [description]
  * @param  to_segid   [description]
  * @return            [description]
  */
 int cost_net(int from_segid, int to_segid){
+	//ÍøÂç¸ºÔØ
+	
+	//Êı¾İ´«ÊäÊ±¼ä
 
 	return 0;
 }
 
 /**
- * è®¡ç®—ä»»åŠ¡çš„å¹³å‡ç­‰å¾…æ—¶é—´
+ * ¼ÆËãÈÎÎñµÄÆ½¾ùµÈ´ıÊ±¼ä
  * @param  from_segid [description]
  * @param  to_segid   [description]
  * @return            [description]
  */
 int cost_wait(int from_segid, int to_segid){
-	/*
-	åˆ†ææ¯ä¸ªsegmentçš„æ‰§è¡Œæ—¥å¿—ï¼Œåˆ¤æ–­ä»»åŠ¡çš„å¹³å‡ç­‰å¾…æ—¶é—´
-	*/
+	//·ÖÎöÃ¿¸ösegmentµÄÖ´ĞĞÈÕÖ¾£¬ÅĞ¶ÏÈÎÎñµÄÆ½¾ùµÈ´ıÊ±¼ä
+
 	return 0;
 }
 
 /**
- * è®¡ç®—æ€»ä»£ä»·
+ * ¼ÆËã×Ü´ú¼Û
  * @param  from_segid [description]
  * @param  to_segid   [description]
  * @return            [description]
@@ -249,7 +276,7 @@ int cost_sum(int from_segid,int to_segid){
 }
 
 /**
- * è¿ç§»æ•°æ®
+ * Ç¨ÒÆÊı¾İ
  * @param segid [description]
  */
 int move_row(int segid){
@@ -257,6 +284,7 @@ int move_row(int segid){
 }
 
 int main(){
+	printf("%d\n",get_row(int segid));
 	judge_seg();
 
     return 0;
