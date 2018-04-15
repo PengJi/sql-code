@@ -128,80 +128,6 @@ int get_comb(int ini[],int r[],int n, int m){
  * @return [description]
  */
 int judge_seg(){
-	return 1;
-}
-
-/**
- * 计算每个segment的cpu代价
- * @param  segid [description]
- * @return       [description]
- */
-int cost_cpu(segid){
-	//得到每个segment的CPU负载
-	
-	//得到CPU处理记录耗费
-
-	return 1;
-}
-
-/**
- * 计算每个segment的io代价
- * @param  segid [description]
- * @return       [description]
- */
-int cost_io(segid){
-	//得到每个segment的I/O负载
-	
-	//得到IO处理记录的时间
-
-	return 1;
-}
-
-/**
- * 计算网络代价
- * @param  from_segid [description]
- * @param  to_segid   [description]
- * @return            [description]
- */
-int cost_net(int from_segid, int to_segid){
-	
-
-	return 1;
-}
-
-/**
- * 计算任务的平均等待时间
- * @param  from_segid [description]
- * @param  to_segid   [description]
- * @return            [description]
- */
-int cost_wait(int from_segid, int to_segid){
-	/*
-	分析每个segment的执行日志，判断任务的平均等待时间
-	*/
-	return 1;
-}
-
-/**
- * 计算总代价
- * @param  from_segid [description]
- * @param  to_segid   [description]
- * @return            [description]
- */
-int cost_sum(int from_segid,int to_segid){
-
-	return cost_cpu() + cost_io() + cost_net() + cost_wait(); 
-}
-
-/**
- * 迁移数据
- * @param segid [description]
- */
-void move_row(int segid){
-}
-
-int main()
-{
 	int ini[MAX_LENGTH];
 	int idx=0, count_num;
 	struct Segdata *segs=NULL;
@@ -244,5 +170,78 @@ int main()
 		get_comb(ini,r,n,m);
 	}
 
+	return 0;
+}
+
+/**
+ * 计算每个segment的cpu代价
+ * @param  segid [description]
+ * @return       [description]
+ */
+int cost_cpu(segid){
+	//得到每个segment的CPU负载
+	
+	//得到CPU处理记录耗费
+
+	return 0;
+}
+
+/**
+ * 计算每个segment的io代价
+ * @param  segid [description]
+ * @return       [description]
+ */
+int cost_io(segid){
+	//得到每个segment的I/O负载
+	
+	//得到IO处理记录的时间
+
+	return 0;
+}
+
+/**
+ * 计算网络代价
+ * @param  from_segid [description]
+ * @param  to_segid   [description]
+ * @return            [description]
+ */
+int cost_net(int from_segid, int to_segid){
+
+	return 0;
+}
+
+/**
+ * 计算任务的平均等待时间
+ * @param  from_segid [description]
+ * @param  to_segid   [description]
+ * @return            [description]
+ */
+int cost_wait(int from_segid, int to_segid){
+	/*
+	分析每个segment的执行日志，判断任务的平均等待时间
+	*/
+	return 0;
+}
+
+/**
+ * 计算总代价
+ * @param  from_segid [description]
+ * @param  to_segid   [description]
+ * @return            [description]
+ */
+int cost_sum(int from_segid,int to_segid){
+
+	return 0; 
+}
+
+/**
+ * 迁移数据
+ * @param segid [description]
+ */
+int move_row(int segid){
+	return 0;
+}
+
+int main(){
     return 0;
 }
