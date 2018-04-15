@@ -166,7 +166,7 @@ int cost_io(segid){
 int cost_net(int from_segid, int to_segid){
 	
 
-	retunr 1;
+	return 1;
 }
 
 /**
