@@ -31,7 +31,8 @@ int get_row_num(){
 
 /**
  * 得到segid的记录数
- * @return 返回segid的记录数
+ * @param  segid gp_segment_id
+ * @return       返回segid的记录数
  */
 int get_row(int segid){
 	FILE *fstream=NULL;
