@@ -5,11 +5,6 @@
 int c=0; //计数
 int result[13000][MAX_LENGTH]; //存储组合结果
 
-struct Segdata{
-	int seg_id;
-	int seg_count;
-}segdata;
-
 /**
  * 得到存有数据的segment个数
  * @return 返回存有数据的segment个数
@@ -132,7 +127,13 @@ int judge_seg(){
 	int idx=0, count_num;
 	struct Segdata *segs=NULL;
 
+	struct timeval start_total, end_total;
+	struct timeval start, end;
+	unsigned long duration,duration_total;
+	gettimeofday(&start_total,NULL);
+
 	//计算数据分布
+	gettimeofday(&start,NULL);
 	int seg[16]={0};
 	printf("数据分布:\n");
 	count_num = get_row_num();
@@ -145,6 +146,9 @@ int judge_seg(){
 			ini[idx++] = i; 
 		}
 	}
+	gettimeofday(&end,NULL);
+	duration = 1000000*(end.tv_sec-start.tv_sec)+ end.tv_usec-start.tv_usec;
+	printf("%ld ms\n",duration/1000);
 
 	/*
 	printf("idx=%d\n",idx);
@@ -165,10 +169,20 @@ int judge_seg(){
 		printf("针对记录:\n");
 		printf("%d,%d\n",segs[i].seg_id, segs[i].seg_count);
 		printf("组合:\n");
-		ini[idx] = segs[i].seg_id;
+		ini[idx] = segs[i].seg_id; //该segment中存有记录
+
+		//依次求组合
+		for(int j=1; j<=n; j++){
+			get_comb(ini,r,n,j);
+		}
+
 		//for(int j=0;j<idx+1;j++) printf("%d\n", ini[j]);
-		get_comb(ini,r,n,m);
+		//get_comb(ini,r,n,m);
 	}
+
+	gettimeofday(&end_total,NULL);
+	duration_total = 1000000*(end_total.tv_sec-start_total.tv_sec)+ end_total.tv_usec-start_total.tv_usec;
+	printf("%ld ms.\n",duration_total/1000);
 
 	return 0;
 }
@@ -243,5 +257,7 @@ int move_row(int segid){
 }
 
 int main(){
+	judge_seg();
+
     return 0;
 }
