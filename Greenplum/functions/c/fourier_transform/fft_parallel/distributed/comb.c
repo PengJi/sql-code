@@ -285,7 +285,7 @@ int move_row(int segid){
 }
 
 int main(){
-	printf("%d\n",get_row(int segid));
+	printf("%d\n",get_row(1));
 	judge_seg();
 
     return 0;
