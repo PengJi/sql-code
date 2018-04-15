@@ -1,7 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
+#include "comb.h"
 
 //求组合
 #define MAX_LENGTH 20
@@ -82,8 +79,7 @@ int get_distribution(int cnt, int seg[], struct Segdata segs[]){
  * @param k     初始集合中当前处理的位置索引，ori[k]
  * @param index 所求组合结果数据的索引，res[index]
  */
-void combination(int ori[], int res[], int n, int m, int k, int index)
-{
+void combination(int ori[], int res[], int n, int m, int k, int index){
     int i;
     if(index == m){ //输出组合结果
         for(i = 0; i < m; ++i){
@@ -201,7 +197,7 @@ int cost_sum(int from_segid,int to_segid){
  * 迁移数据
  * @param segid [description]
  */
-void adjust_seg(int segid){
+void move_row(int segid){
 }
 
 int main()
@@ -231,12 +227,12 @@ int main()
 	}
 	*/
 
-	printf("存有数据segment:\n");
+	printf("存有数据的segment:\n");
 	for(int i=0; i<count_num; i++){
 		printf("%d,%d\n",segs[i].seg_id, segs[i].seg_count);
 	}
 
-	//对每个存有的记录的segment求组合
+	//对每个存有记录的segment求组合
 	int r[MAX_LENGTH];
 	int n=idx+1,m=count_num-1;
 	for(int i=0; i<count_num; i++){
