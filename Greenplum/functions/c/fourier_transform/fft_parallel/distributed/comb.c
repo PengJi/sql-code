@@ -192,6 +192,7 @@ int judge_seg(){
 	//对每个存有记录的segment求组合
 	int r[MAX_LENGTH]; //存储递归过程中的中间结果
 	int n=idx+1,m=count_num-1;
+	int move_row_count;//需要迁移的记录数
 	for(int i=0; i<count_num; i++){ //对每个存有记录的segment循环
 		printf("针对记录:\n");
 		printf("%d,%d\n",segs[i].seg_id, segs[i].seg_count);
@@ -203,11 +204,15 @@ int judge_seg(){
 			printf("current gp_segment_id: %d\n",segs[i].seg_id);
 			get_comb(ini,r,n,j);//计算所有组合
 
+			move_row_count = segs[i].seg_count/j; //计算需要迁移的记录数
+
 			//打印结果
 			for(int a=0; a<c; a++){ //一共有c种组合
 				for(int b=0; b<j; b++){ //每种组合中有j个项
 					printf("%d ",result[a][b]); //全局变量
 
+					//计算seg[i].seg_id迁移到result[a][b]的代价
+					cost_sum(seg[i].seg_id, result[a][b], move_row_count);
 				}
 				printf("\n");
 			}
@@ -231,7 +236,7 @@ int judge_seg(){
  * @param  segid [description]
  * @return       [description]
  */
-int cost_cpu(segid){
+int cost_cpu(int segid, int row_size){
 	//得到每个segment的CPU负载
 	
 	//得到CPU处理记录耗费
@@ -244,7 +249,7 @@ int cost_cpu(segid){
  * @param  segid [description]
  * @return       [description]
  */
-int cost_io(segid){
+int cost_io(int segid,int row_size){
 	//得到每个segment的I/O负载
 	
 	//得到IO处理记录的时间
@@ -258,12 +263,28 @@ int cost_io(segid){
  * @param  to_segid   [description]
  * @return            [description]
  */
-int cost_net(int from_segid, int to_segid){
+int cost_net(int from_segid, int to_segid, int row_size){
 	//网络负载
 	
 	//数据传输时间
 
 	return 0;
+}
+
+/**
+ * 计算总代价
+ * @param  from_segid [description]
+ * @param  to_segid   [description]
+ * @return            [description]
+ */
+int cost_sum(int from_segid, int to_segid, int row_size){
+	cost_cpu(from_segid, row_size);
+	cost_cpu(to_segid, row_size);
+	cost_io(from_segid, row_size);
+	cost_io(to_segid, row_size);
+	cost_net(from_segid, to_segid, row_size);
+
+	return 0; 
 }
 
 /**
@@ -276,17 +297,6 @@ int cost_wait(int from_segid, int to_segid){
 	//分析每个segment的执行日志，判断任务的平均等待时间
 
 	return 0;
-}
-
-/**
- * 计算总代价
- * @param  from_segid [description]
- * @param  to_segid   [description]
- * @return            [description]
- */
-int cost_sum(int from_segid,int to_segid){
-
-	return 0; 
 }
 
 /**
