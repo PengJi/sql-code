@@ -130,6 +130,8 @@ void combination(int ori[], int res[], int n, int m, int k, int index){
 int get_comb(int ini[],int r[],int n, int m){
     combination(ini,r,n,m, 0, 0);
 
+    /*
+    //打印结果
 	for(int i=0; i<c; i++){ //一共有c种组合
 		for(int j=0; j<m; j++){ //每种组合中有m个项
 			printf("%d ",result[i][j]);
@@ -138,6 +140,7 @@ int get_comb(int ini[],int r[],int n, int m){
 	}
 	printf("The sum of combination: %d\n",c);
 	c = 0;
+	*/
 	
 	return 0;
 }
@@ -195,15 +198,25 @@ int judge_seg(){
 		printf("组合:\n");
 		ini[idx] = segs[i].seg_id; //该segment中存有记录
 
-		//依次求组合
+		//依次求组合，组合中的segment个数分别为：1,2,3,...,j
 		for(int j=1; j<=n; j++){
 			printf("current gp_segment_id: %d\n",segs[i].seg_id);
-			get_comb(ini,r,n,j);
+			get_comb(ini,r,n,j);//计算所有组合
+
+			//打印结果
+			for(int a=0; a<c; a++){ //一共有c种组合
+				for(int b=0; b<j; b++){ //每种组合中有j个项
+					printf("%d ",result[a][b]); //全局变量
+
+				}
+				printf("\n");
+			}
+			printf("The sum of combination: %d\n",c);
+			c = 0; //全局变量
+
 			break;
 		}
 
-		//for(int j=0;j<idx+1;j++) printf("%d\n", ini[j]);
-		//get_comb(ini,r,n,m);
 	}
 
 	gettimeofday(&end_total,NULL);
