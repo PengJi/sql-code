@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <math.h>
 
 #include <sys/time.h>
 
@@ -9,6 +10,11 @@ struct Segdata{
     int seg_id;
     int seg_count;
 }segdata;
+
+struct Combcost{
+	int total_cost;
+	int comb[16];
+}combcost;
 
 int get_row_num();
 int get_row(int segid);

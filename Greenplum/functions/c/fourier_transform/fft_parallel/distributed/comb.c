@@ -191,8 +191,10 @@ int judge_seg(){
 
 	//对每个存有记录的segment求组合
 	int r[MAX_LENGTH]; //存储递归过程中的中间结果
-	int n=idx+1,m=count_num-1;
+	int n=idx+1, m=count_num-1;
 	int move_row_count;//需要迁移的记录数
+	combcost.total_cost = 0;
+	combcost.comb[16]={0};
 	for(int i=0; i<count_num; i++){ //对每个存有记录的segment循环
 		printf("针对记录:\n");
 		printf("%d,%d\n",segs[i].seg_id, segs[i].seg_count);
@@ -212,7 +214,10 @@ int judge_seg(){
 					printf("%d ",result[a][b]); //全局变量
 
 					//计算seg[i].seg_id迁移到result[a][b]的代价
-					cost_sum(seg[i].seg_id, result[a][b], move_row_count);
+					if(abs(combcost.total_cost - 
+						cost_sum(seg[i].seg_id, result[a][b], move_row_count)) >= 10){ //找到代价更小的方案
+					}else{ //进一步判断等待时间
+					}
 				}
 				printf("\n");
 			}
@@ -269,6 +274,22 @@ int cost_net(int from_segid, int to_segid, int row_size){
 	//数据传输时间
 
 	return 0;
+}
+
+/**
+ * 计算每个分布的代价
+ * @param  from_segid [description]
+ * @param  to_segid   [description]
+ * @return            [description]
+ */
+int cost_per(int from_segid, int to_segid, int row_size){
+	cost_cpu(from_segid, row_size);
+	cost_cpu(to_segid, row_size);
+	cost_io(from_segid, row_size);
+	cost_io(to_segid, row_size);
+	cost_net(from_segid, to_segid, row_size);
+
+	return 0; 
 }
 
 /**
