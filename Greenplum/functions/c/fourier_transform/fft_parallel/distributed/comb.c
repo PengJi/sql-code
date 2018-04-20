@@ -217,7 +217,7 @@ int judge_seg(){
 
 				//计算seg[i].seg_id迁移到result[a][b]的代价
 				if(abs(combcost.total_cost - 
-					cost_sum(seg[i].seg_id, result[a][b], tmp, move_row_count)) >= 10){ //找到代价更小的方案
+					cost_sum(segs[i].seg_id, tmp, tmp, move_row_count)) >= 10){ //找到代价更小的方案
 				}else{ //进一步判断等待时间
 				}
 				printf("\n");
@@ -240,7 +240,7 @@ int judge_seg(){
 /**
  * 计算每个segment的cpu代价
  * @param  segid [description]
- * @return       [description]
+ * @return       返回CPU代价
  */
 int cost_cpu(int segid, int row_size){
 	//得到每个segment的CPU负载
@@ -254,7 +254,7 @@ int cost_cpu(int segid, int row_size){
 /**
  * 计算每个segment的io代价
  * @param  segid [description]
- * @return       [description]
+ * @return       返回IO代价
  */
 int cost_io(int segid,int row_size){
 	//得到每个segment的I/O负载
@@ -269,7 +269,7 @@ int cost_io(int segid,int row_size){
  * 计算网络代价
  * @param  from_segid [description]
  * @param  to_segid   [description]
- * @return            [description]
+ * @return            返回网络代价
  */
 int cost_net(int from_segid, int to_segid, int row_size){
 	if(from_segid == to_segid){
@@ -287,7 +287,7 @@ int cost_net(int from_segid, int to_segid, int row_size){
  * 计算每个分布的代价
  * @param  from_segid [description]
  * @param  to_segid   [description]
- * @return            [description]
+ * @return            返回代价
  */
 int cost_per(int from_segid, int to_segid, int row_size){
 	return cost_cpu(to_segid, row_size) + cost_io(to_segid, row_size) +
@@ -296,9 +296,11 @@ int cost_per(int from_segid, int to_segid, int row_size){
 
 /**
  * 计算每一种方案的总代价
- * @param  from_segid [description]
- * @param  to_segid   [description]
- * @return            [description]
+ * @param  from_segid 从哪个segment节点发送
+ * @param  to_segs    要发送到的segment
+ * @param  row_num    每一种方案中的segment个数
+ * @param  row_size   分发的记录条数
+ * @return            返回方案的总代价
  */
 int cost_sum(int from_segid, int to_segs[], int row_num, int row_size){
 	int total=0;
@@ -309,7 +311,6 @@ int cost_sum(int from_segid, int to_segs[], int row_num, int row_size){
 	}
 	total += cost_cpu(from_segid, row_size);
 	total += cost_io(from_segid, row_size);
-	total += cost_net(from_segid, to_segid, row_size);
 
 	return total; 
 }
