@@ -194,7 +194,7 @@ int judge_seg(){
 	int n=idx+1, m=count_num-1;
 	int move_row_count;//需要迁移的记录数
 	combcost.total_cost = 0;
-	combcost.comb[16]={0};
+	//combcost.comb[16]={0};
 	for(int i=0; i<count_num; i++){ //对每个存有记录的segment循环
 		printf("针对记录:\n");
 		printf("%d,%d\n",segs[i].seg_id, segs[i].seg_count);
