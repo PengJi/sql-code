@@ -208,16 +208,17 @@ int judge_seg(){
 
 			move_row_count = segs[i].seg_count/j; //计算需要迁移的记录数
 
-			//打印结果
+			int *tmp = (int *) malloc(sizeof(int) * c);
 			for(int a=0; a<c; a++){ //一共有c种组合
 				for(int b=0; b<j; b++){ //每种组合中有j个项
 					printf("%d ",result[a][b]); //全局变量
+					tmp[b] = result[a][b];
+				}
 
-					//计算seg[i].seg_id迁移到result[a][b]的代价
-					if(abs(combcost.total_cost - 
-						cost_sum(seg[i].seg_id, result[a][b], move_row_count)) >= 10){ //找到代价更小的方案
-					}else{ //进一步判断等待时间
-					}
+				//计算seg[i].seg_id迁移到result[a][b]的代价
+				if(abs(combcost.total_cost - 
+					cost_sum(seg[i].seg_id, result[a][b], tmp, move_row_count)) >= 10){ //找到代价更小的方案
+				}else{ //进一步判断等待时间
 				}
 				printf("\n");
 			}
@@ -269,6 +270,9 @@ int cost_io(int segid,int row_size){
  * @return            [description]
  */
 int cost_net(int from_segid, int to_segid, int row_size){
+	if(from_segid == to_segid){
+		return 0;
+	}
 	//网络负载
 	
 	//数据传输时间
@@ -283,29 +287,28 @@ int cost_net(int from_segid, int to_segid, int row_size){
  * @return            [description]
  */
 int cost_per(int from_segid, int to_segid, int row_size){
-	cost_cpu(from_segid, row_size);
-	cost_cpu(to_segid, row_size);
-	cost_io(from_segid, row_size);
-	cost_io(to_segid, row_size);
-	cost_net(from_segid, to_segid, row_size);
-
-	return 0; 
+	return cost_cpu(to_segid, row_size) + cost_io(to_segid, row_size) +
+	cost_net(from_segid, to_segid, row_size); 
 }
 
 /**
- * 计算总代价
+ * 计算每一种方案的总代价
  * @param  from_segid [description]
  * @param  to_segid   [description]
  * @return            [description]
  */
-int cost_sum(int from_segid, int to_segid, int row_size){
-	cost_cpu(from_segid, row_size);
-	cost_cpu(to_segid, row_size);
-	cost_io(from_segid, row_size);
-	cost_io(to_segid, row_size);
-	cost_net(from_segid, to_segid, row_size);
+int cost_sum(int from_segid, int to_segs[], int row_num, int row_size){
+	int total=0;
 
-	return 0; 
+	for(int i=0; i<row_num; i++){
+		if(from_segid == to_segs[i]) continue; //代价放到for外面计算
+		total += cost_per(from_segid, to_segs[i], row_size);
+	}
+	total += cost_cpu(from_segid, row_size);
+	total += cost_io(from_segid, row_size);
+	total += cost_net(from_segid, to_segid, row_size);
+
+	return total; 
 }
 
 /**
