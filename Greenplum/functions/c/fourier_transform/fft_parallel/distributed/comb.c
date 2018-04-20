@@ -244,6 +244,7 @@ int judge_seg(){
  */
 int cost_cpu(int segid, int row_size){
 	//得到每个segment的CPU负载
+	//uptime
 	
 	//得到CPU处理记录耗费
 
@@ -257,6 +258,7 @@ int cost_cpu(int segid, int row_size){
  */
 int cost_io(int segid,int row_size){
 	//得到每个segment的I/O负载
+	//iostat
 	
 	//得到IO处理记录的时间
 
@@ -274,6 +276,7 @@ int cost_net(int from_segid, int to_segid, int row_size){
 		return 0;
 	}
 	//网络负载
+	//netstat
 	
 	//数据传输时间
 
