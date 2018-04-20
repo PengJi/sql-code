@@ -243,8 +243,13 @@ int judge_seg(){
  * @return       返回CPU代价
  */
 int cost_cpu(int segid, int row_size){
+	float costcpu;
 	FILE *fstream=NULL;      
 	char buff[100];
+	float load_max = 4.0; //每个节点的最大负载
+	int row_max = 12; //每个segment的最大记录条数
+	float arg_load;
+	float arg_time;
 
 	//得到每个segment的CPU负载
 	//uptime
@@ -253,11 +258,29 @@ int cost_cpu(int segid, int row_size){
 		fprintf(stderr,"execute command failed: %s",strerror(errno));
 		return -1;
 	}
-	printf("%s\n",buff);
-	
-	//得到CPU处理记录耗费
+	fgets(buff, sizeof(buff), fstream);
+	printf("the cpu cost is: %s\n",buff);
 
-	return 0;
+	//1分钟内的负载
+	float cp1 = (buff[54]-'0') + (buff[56]-'0')*0.1 + (buff[57]-'0')*0.01;
+	printf("load of 1 minute: %f\n", cp1);
+
+	//5分钟内的负载
+	float cp5 = (buff[60]-'0') + (buff[62]-'0')*0.1 + (buff[63]-'0')*0.01;
+	printf("load of 5 minutes: %f\n", cp5);
+
+	//15分钟内的负载
+	float cp15 = (buff[66]-'0') + (buff[68]-'0')*0.1 + (buff[69]-'0')*0.1;
+	printf("load of 15 minutes: %f\n", cp15);
+
+	arg_load = (cp5/load_max)*100;
+
+	//得到CPU处理记录耗费
+	arg_time = row_size/row_max;
+	printf("cpu cost is: %f\n", arg_load + arg_time);
+
+	pclose(fstream);
+	return arg_load + arg_time;
 }
 
 /**
@@ -348,6 +371,7 @@ int main(){
 	printf("%d\n",get_row(1));
 	//judge_seg();
 	cost_cpu(1,2);
+	cost_io(1,2);
 
     return 0;
 }
