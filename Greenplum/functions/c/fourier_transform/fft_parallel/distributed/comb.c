@@ -243,16 +243,14 @@ int judge_seg(){
  * @return       返回CPU代价
  */
 int cost_cpu(int segid, int row_size){
-	float costcpu;
 	FILE *fstream=NULL;      
 	char buff[100];
 	float load_max = 4.0; //每个节点的最大负载
 	int row_max = 12; //每个segment的最大记录条数
-	float arg_load;
-	float arg_time;
+	float arg_load, arg_time;
+	int imp = 100; //影响因子
 
-	//得到每个segment的CPU负载
-	//uptime
+	//得到每个segment的CPU负载，uptime
 	memset(buff,0,sizeof(buff));
 	if((fstream=popen("uptime","r")) == NULL){
 		fprintf(stderr,"execute command failed: %s",strerror(errno));
@@ -273,7 +271,7 @@ int cost_cpu(int segid, int row_size){
 	float cp15 = (buff[66]-'0') + (buff[68]-'0')*0.1 + (buff[69]-'0')*0.1;
 	printf("load of 15 minutes: %f\n", cp15);
 
-	arg_load = (cp5/load_max)*100;
+	arg_load = (cp5/load_max) * imp;
 
 	//得到CPU处理记录耗费
 	arg_time = row_size/row_max;
@@ -286,15 +284,48 @@ int cost_cpu(int segid, int row_size){
 /**
  * 计算每个segment的io代价
  * @param  segid [description]
+ * @param  flag 当为0时，表示读；当为1时，表示写；当为2时，表示既有读也有写
  * @return       返回IO代价
  */
-int cost_io(int segid,int row_size){
-	//得到每个segment的I/O负载
-	//iostat
+int cost_io(int segid, int flag,int row_size){
+	FILE *fstream=NULL;
+	char buff[100];
+	float arg_load, arg_time=0.0;
+	float writeMB = 50; //平均写速率MB/s
+	float readMB = 200; //平均读速率MB/s
+	float row_bytes = 32; //每条记录的大小，KB
+	int imp = 100;
+
+	//得到每个segment的I/O负载，iostat得到磁盘使用率
+    memset(buff,0,sizeof(buff));
+    if((fstream=popen("iostat -x","r")) == NULL){
+        fprintf(stderr,"execute command failed: %s",strerror(errno));
+        return -1;
+    }
+	//获取负载(磁盘使用率: %util)
+   	fgets(buff, sizeof(buff), fstream);
+	for(int i=0; i<8; i++){
+    	fgets(buff, sizeof(buff), fstream);
+		if(i==7){
+    		//printf("the io cost is: %s\n",buff);
+			arg_load = ((buff[18]-'0') + (buff[20]-'0')*0.1 + (buff[21]-'0')*0.01) * imp;
+		}
+	}
+	printf("IO load is: %f\n", arg_load);
 	
 	//得到IO处理记录的时间
+	if(flag == 0){ //读时间
+		arg_time += (row_size*row_bytes/1024)/readMB;
+	}else if(flag == 1){
+		arg_time += (row_size*row_bytes/1024)/writeMB;
+	}else{
+		arg_time += (row_size*row_bytes/1024)/readMB;
+		arg_time += (row_size*row_bytes/1024)/writeMB;
+	}
 
-	return 0;
+	printf("IO cost is: %f\n", arg_load + arg_time);
+
+	return arg_load + arg_time;
 }
 
 /**
@@ -322,7 +353,7 @@ int cost_net(int from_segid, int to_segid, int row_size){
  * @return            返回代价
  */
 int cost_per(int from_segid, int to_segid, int row_size){
-	return cost_cpu(to_segid, row_size) + cost_io(to_segid, row_size) +
+	return cost_cpu(to_segid, row_size) + cost_io(to_segid, 1, row_size) +
 	cost_net(from_segid, to_segid, row_size); 
 }
 
@@ -342,7 +373,7 @@ int cost_sum(int from_segid, int to_segs[], int row_num, int row_size){
 		total += cost_per(from_segid, to_segs[i], row_size);
 	}
 	total += cost_cpu(from_segid, row_size);
-	total += cost_io(from_segid, row_size);
+	total += cost_io(from_segid, 0, row_size);
 
 	return total; 
 }
@@ -371,7 +402,7 @@ int main(){
 	printf("%d\n",get_row(1));
 	//judge_seg();
 	cost_cpu(1,2);
-	cost_io(1,2);
+	cost_io(1,1,2);
 
     return 0;
 }
