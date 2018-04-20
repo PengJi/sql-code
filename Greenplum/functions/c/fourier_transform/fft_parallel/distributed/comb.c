@@ -243,8 +243,17 @@ int judge_seg(){
  * @return       返回CPU代价
  */
 int cost_cpu(int segid, int row_size){
+	FILE *fstream=NULL;      
+	char buff[100];
+
 	//得到每个segment的CPU负载
 	//uptime
+	memset(buff,0,sizeof(buff));
+	if((fstream=popen("uptime","r")) == NULL){
+		fprintf(stderr,"execute command failed: %s",strerror(errno));
+		return -1;
+	}
+	printf("%s\n",buff);
 	
 	//得到CPU处理记录耗费
 
@@ -337,7 +346,8 @@ int move_row(int segid){
 
 int main(){
 	printf("%d\n",get_row(1));
-	judge_seg();
+	//judge_seg();
+	cost_cpu(1,2);
 
     return 0;
 }
