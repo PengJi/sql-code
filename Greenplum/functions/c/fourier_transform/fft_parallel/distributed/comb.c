@@ -305,7 +305,7 @@ int cost_io(int segid, int flag,int row_size){
         return -1;
     }
 	//获取负载(磁盘使用率: %util)
-   	fgets(buff, sizeof(buff), fstream);
+	fgets(buff, sizeof(buff), fstream);
 	for(int i=0; i<8; i++){
     	fgets(buff, sizeof(buff), fstream);
 		if(i==7){
@@ -344,13 +344,24 @@ int cost_net(int from_segid, int to_segid, int row_size){
 
 	FILE *fstream=NULL;
 	char buff[100];
-	int imp=100;
+	float arg_load, arg_time=;
+	float row_bytes = 32; //每条记录的大小，KB
+	float tranMB = 60; //网络传输速率，MB/s
+	int imp=100; //影响因子
 
 	//网络负载，netstat
+	memset(buff,0,sizeof(buff));
+    if((fstream=popen("netstat","r")) == NULL){
+        fprintf(stderr,"execute command failed: %s",strerror(errno));
+        return -1;
+    }
+    fgets(buff, sizeof(buff), fstream);
+	avg_load = 100 * imp;
 	
 	//数据传输时间
+	avg_time = (row_size * row_bytes)/tranMB;
 
-	return 0;
+	return avg_load + avg_time;
 }
 
 /**
@@ -391,8 +402,16 @@ int cost_sum(int from_segid, int to_segs[], int row_num, int row_size){
  * @param  to_segid   [description]
  * @return            [description]
  */
-int cost_wait(int from_segid, int to_segid){
+int cost_wait(int segid){
+	FILE *fstream=NULL;
+	char buff[100];
 	//分析每个segment的执行日志，判断任务的平均等待时间
+	memset(buff,0,sizeof(buff));
+	if((fstream=popen("netstat","r")) == NULL){
+		fprintf(stderr,"execute command failed: %s",strerror(errno));
+		return -1;
+	}
+	fgets(buff, sizeof(buff), fstream);
 
 	return 0;
 }
