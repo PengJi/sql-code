@@ -59,7 +59,7 @@ int get_row(int segid){
  * @param  cnt  存有数据的segment个数
  * @param  seg  存储每个segment的数据条数
  * @param  segs 存有数据的segment
- * @return      
+ * @return      结果
  */
 int get_distribution(int cnt, int seg[], struct Segdata segs[]){
     FILE *fstream=NULL;      
@@ -239,8 +239,9 @@ int judge_seg(){
 
 /**
  * 计算每个segment的cpu代价
- * @param  segid [description]
- * @return       返回CPU代价
+ * @param  segid    gp_segment_id
+ * @param  row_size 记录条数
+ * @return          CPU代价
  */
 int cost_cpu(int segid, int row_size){
 	FILE *fstream=NULL;      
@@ -283,9 +284,10 @@ int cost_cpu(int segid, int row_size){
 
 /**
  * 计算每个segment的io代价
- * @param  segid [description]
- * @param  flag 当为0时，表示读；当为1时，表示写；当为2时，表示既有读也有写
- * @return       返回IO代价
+ * @param  segid    gp_segment_id
+ * @param  flag     当为0时，表示读；当为1时，表示写；当为2时，表示既有读也有写
+ * @param  row_size 记录条数
+ * @return          IO代价
  */
 int cost_io(int segid, int flag,int row_size){
 	FILE *fstream=NULL;
@@ -294,7 +296,7 @@ int cost_io(int segid, int flag,int row_size){
 	float writeMB = 50; //平均写速率MB/s
 	float readMB = 200; //平均读速率MB/s
 	float row_bytes = 32; //每条记录的大小，KB
-	int imp = 100;
+	int imp = 100; //影响因子
 
 	//得到每个segment的I/O负载，iostat得到磁盘使用率
     memset(buff,0,sizeof(buff));
@@ -316,9 +318,9 @@ int cost_io(int segid, int flag,int row_size){
 	//得到IO处理记录的时间
 	if(flag == 0){ //读时间
 		arg_time += (row_size*row_bytes/1024)/readMB;
-	}else if(flag == 1){
+	}else if(flag == 1){ //写时间
 		arg_time += (row_size*row_bytes/1024)/writeMB;
-	}else{
+	}else{ //读写事件
 		arg_time += (row_size*row_bytes/1024)/readMB;
 		arg_time += (row_size*row_bytes/1024)/writeMB;
 	}
@@ -332,14 +334,19 @@ int cost_io(int segid, int flag,int row_size){
  * 计算网络代价
  * @param  from_segid [description]
  * @param  to_segid   [description]
- * @return            返回网络代价
+ * @param  row_size   [description]
+ * @return            网络代价
  */
 int cost_net(int from_segid, int to_segid, int row_size){
 	if(from_segid == to_segid){
 		return 0;
 	}
-	//网络负载
-	//netstat
+
+	FILE *fstream=NULL;
+	char buff[100];
+	int imp=100;
+
+	//网络负载，netstat
 	
 	//数据传输时间
 
