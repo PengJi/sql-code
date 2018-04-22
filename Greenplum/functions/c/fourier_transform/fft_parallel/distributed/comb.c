@@ -405,9 +405,36 @@ int cost_sum(int from_segid, int to_segs[], int row_num, int row_size){
 int cost_wait(int segid){
 	FILE *fstream=NULL;
 	char buff[100];
+	char *sql = "SELECT
+    procpid,
+  START,
+  now()   - START AS lap,
+    current_query,
+  -- count() over() count_num,
+  t2.rolname,t3.rsqname,
+  ip
+FROM
+    (
+        SELECT
+            backendid,
+      pg_stat_get_backend_userid(S.backendid) as uid,
+      pg_stat_get_backend_client_addr(S.backendid) as ip,
+            pg_stat_get_backend_pid (S.backendid) AS procpid,
+            pg_stat_get_backend_activity_start (S.backendid) AS START,
+            pg_stat_get_backend_activity (S.backendid) AS current_query
+        FROM
+            (
+                SELECT
+                    pg_stat_get_backend_idset () AS backendid
+            ) AS S
+    ) AS t1 left join pg_authid  t2 on t1.uid=t2.oid
+    left join pg_resqueue t3 on t2.rolresqueue=t3.oid
+WHERE
+    current_query!= '<IDLE>'
+ORDER BY lap DESC;";
 	//分析每个segment的执行日志，判断任务的平均等待时间
 	memset(buff,0,sizeof(buff));
-	if((fstream=popen("netstat","r")) == NULL){
+	if((fstream=popen(*str,"r")) == NULL){
 		fprintf(stderr,"execute command failed: %s",strerror(errno));
 		return -1;
 	}
@@ -429,6 +456,9 @@ int main(){
 	//judge_seg();
 	cost_cpu(1,2);
 	cost_io(1,1,2);
+	cost_net(1,2,2);
+
+	cost_wait();
 
     return 0;
 }
