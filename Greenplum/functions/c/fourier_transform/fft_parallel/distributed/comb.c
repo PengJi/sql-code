@@ -409,9 +409,8 @@ int cost_sum(int from_segid, int to_segs[], int row_num, int row_size){
 
 /**
  * 计算任务的平均等待时间
- * @param  from_segid [description]
- * @param  to_segid   [description]
- * @return            [description]
+ * @param  segid [description]
+ * @return       [description]
  */
 int cost_wait(int segid){
 	FILE *fstream=NULL;
@@ -478,7 +477,8 @@ int cost_wait(int segid){
 
 /**
  * 迁移数据
- * @param segid [description]
+ * @param  segid [description]
+ * @return       [description]
  */
 int move_row(int segid){
 	return 0;
