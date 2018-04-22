@@ -258,7 +258,7 @@ int cost_cpu(int segid, int row_size){
 		return -1;
 	}
 	fgets(buff, sizeof(buff), fstream);
-	printf("the cpu cost is: %s\n",buff);
+	//printf("the cpu cost is: %s\n",buff);
 
 	//1分钟内的负载
 	float cp1 = (buff[54]-'0') + (buff[56]-'0')*0.1 + (buff[57]-'0')*0.01;
@@ -344,7 +344,7 @@ int cost_net(int from_segid, int to_segid, int row_size){
 
 	FILE *fstream=NULL;
 	char buff[100];
-	float arg_load, arg_time=;
+	float arg_load, arg_time;
 	float row_bytes = 32; //每条记录的大小，KB
 	float tranMB = 60; //网络传输速率，MB/s
 	int imp=100; //影响因子
@@ -356,12 +356,14 @@ int cost_net(int from_segid, int to_segid, int row_size){
         return -1;
     }
     fgets(buff, sizeof(buff), fstream);
-	avg_load = 100 * imp;
+	arg_load = 100 * imp;
 	
 	//数据传输时间
-	avg_time = (row_size * row_bytes)/tranMB;
+	arg_time = (row_size * row_bytes)/tranMB;
 
-	return avg_load + avg_time;
+	printf("net cost is: %f", arg_load+arg_time);
+
+	return arg_load + arg_time;
 }
 
 /**
@@ -404,41 +406,38 @@ int cost_sum(int from_segid, int to_segs[], int row_num, int row_size){
  */
 int cost_wait(int segid){
 	FILE *fstream=NULL;
-	char buff[100];
-	char *sql = "SELECT
-    procpid,
-  START,
-  now()   - START AS lap,
-    current_query,
-  -- count() over() count_num,
-  t2.rolname,t3.rsqname,
-  ip
-FROM
-    (
-        SELECT
-            backendid,
-      pg_stat_get_backend_userid(S.backendid) as uid,
-      pg_stat_get_backend_client_addr(S.backendid) as ip,
-            pg_stat_get_backend_pid (S.backendid) AS procpid,
-            pg_stat_get_backend_activity_start (S.backendid) AS START,
-            pg_stat_get_backend_activity (S.backendid) AS current_query
-        FROM
-            (
-                SELECT
-                    pg_stat_get_backend_idset () AS backendid
-            ) AS S
-    ) AS t1 left join pg_authid  t2 on t1.uid=t2.oid
-    left join pg_resqueue t3 on t2.rolresqueue=t3.oid
-WHERE
-    current_query!= '<IDLE>'
-ORDER BY lap DESC;";
+	char buff[100]; //每一行输出的字符数
+	char *sql = {"psql -d testDB -c ' \
+	SELECT procpid, START, now()-START AS lap, t2.rolname,t3.rsqname FROM \
+    ( \
+        SELECT \
+			backendid, \
+			pg_stat_get_backend_userid(S.backendid) as uid, \
+			pg_stat_get_backend_client_addr(S.backendid) as ip, \
+            pg_stat_get_backend_pid (S.backendid) AS procpid, \
+            pg_stat_get_backend_activity_start (S.backendid) AS START, \
+            pg_stat_get_backend_activity (S.backendid) AS current_query \
+        FROM \
+            ( \
+                SELECT \
+                    pg_stat_get_backend_idset () AS backendid \
+            ) AS S \
+    ) AS t1 left join pg_authid  t2 on t1.uid=t2.oid \
+    left join pg_resqueue t3 on t2.rolresqueue=t3.oid \
+    ORDER BY lap DESC;' -xt"};
+	//printf("the query string is: %s\n",sql);
 	//分析每个segment的执行日志，判断任务的平均等待时间
 	memset(buff,0,sizeof(buff));
-	if((fstream=popen(*str,"r")) == NULL){
+	if((fstream=popen(sql,"r")) == NULL){
 		fprintf(stderr,"execute command failed: %s",strerror(errno));
 		return -1;
 	}
 	fgets(buff, sizeof(buff), fstream);
+	printf("%s\n", buff);
+	for(int i=0; i<11; i++){
+		fgets(buff, sizeof(buff), fstream);
+		printf("%s\n", buff);
+	}
 
 	return 0;
 }
@@ -454,11 +453,11 @@ int move_row(int segid){
 int main(){
 	printf("%d\n",get_row(1));
 	//judge_seg();
-	cost_cpu(1,2);
-	cost_io(1,1,2);
-	cost_net(1,2,2);
+	//cost_cpu(1,2);
+	//cost_io(1,1,2);
+	//cost_net(1,2,2);
 
-	cost_wait();
+	cost_wait(1);
 
     return 0;
 }
