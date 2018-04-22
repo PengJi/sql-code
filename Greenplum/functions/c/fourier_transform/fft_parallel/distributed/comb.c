@@ -361,7 +361,7 @@ int cost_net(int from_segid, int to_segid, int row_size){
 	//数据传输时间
 	arg_time = (row_size * row_bytes)/tranMB;
 
-	printf("net cost is: %f", arg_load+arg_time);
+	printf("net cost is: %f\n", arg_load+arg_time);
 
 	return arg_load + arg_time;
 }
@@ -407,8 +407,10 @@ int cost_sum(int from_segid, int to_segs[], int row_num, int row_size){
 int cost_wait(int segid){
 	FILE *fstream=NULL;
 	char buff[100]; //每一行输出的字符数
+	int sec, minu, hour, tm=0;
+	/*
 	char *sql = {"psql -d testDB -c ' \
-	SELECT procpid, START, now()-START AS lap, t2.rolname,t3.rsqname FROM \
+	SELECT now()-START AS lap FROM \
     ( \
         SELECT \
 			backendid, \
@@ -425,6 +427,8 @@ int cost_wait(int segid){
     ) AS t1 left join pg_authid  t2 on t1.uid=t2.oid \
     left join pg_resqueue t3 on t2.rolresqueue=t3.oid \
     ORDER BY lap DESC;' -xt"};
+	*/
+	char *sql = {"psql -d testDB -f cost_wait.sql -xt"};
 	//printf("the query string is: %s\n",sql);
 	//分析每个segment的执行日志，判断任务的平均等待时间
 	memset(buff,0,sizeof(buff));
@@ -432,12 +436,16 @@ int cost_wait(int segid){
 		fprintf(stderr,"execute command failed: %s",strerror(errno));
 		return -1;
 	}
-	fgets(buff, sizeof(buff), fstream);
-	printf("%s\n", buff);
-	for(int i=0; i<11; i++){
-		fgets(buff, sizeof(buff), fstream);
-		printf("%s\n", buff);
+	while(fgets(buff, sizeof(buff), fstream) != NULL){
+		if(buff[4] == '|'){
+			printf("%s", buff);
+			sec = (buff[12]-'0')*10 + (buff[13]-'0'); //秒
+			minu = (buff[9]-'0')*10 + (buff[10]-'0'); //分钟
+			hour = (buff[6]-'0')*10 + (buff[7]-'0'); //小时
+			tm += sec + minu*60 + hour*60*60;
+		}
 	}
+	printf("wait time is: %d\n", tm);
 
 	return 0;
 }
@@ -453,9 +461,9 @@ int move_row(int segid){
 int main(){
 	printf("%d\n",get_row(1));
 	//judge_seg();
-	//cost_cpu(1,2);
-	//cost_io(1,1,2);
-	//cost_net(1,2,2);
+	cost_cpu(1,2);
+	cost_io(1,1,2);
+	cost_net(1,2,2);
 
 	cost_wait(1);
 
