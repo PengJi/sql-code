@@ -1,10 +1,5 @@
 #include "comb.h"
 
-//求组合
-#define MAX_LENGTH 20
-int c=0; //计数，组合数
-int result[13000][MAX_LENGTH]; //最终结果，存储所有组合结果
-
 /**
  * 得到存有数据的segment个数
  * @return 返回存有数据的segment个数
@@ -47,7 +42,7 @@ int get_row(int segid){
 
 	while(fgets(buff, sizeof(buff), fstream) != NULL){
 		sscanf(buff, "%d", &count_num);
-		printf("%d\n",count_num);
+		//printf("the segment row num is: %d\n",count_num);
 	}
 
     pclose(fstream);
@@ -106,7 +101,6 @@ void combination(int ori[], int res[], int n, int m, int k, int index){
 			//printf("%d ", res[i]);
 			result[c][i] = res[i];
 		}
-		//printf("\n");
 		
 		c++;
 
@@ -459,13 +453,14 @@ int move_row(int segid){
 }
 
 int main(){
-	printf("%d\n",get_row(1));
 	//judge_seg();
 	cost_cpu(1,2);
 	cost_io(1,1,2);
 	cost_net(1,2,2);
 
 	cost_wait(1);
+
+	printf("%s\n",dict[1]);
 
     return 0;
 }
