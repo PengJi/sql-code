@@ -240,14 +240,19 @@ int judge_seg(){
 int cost_cpu(int segid, int row_size){
 	FILE *fstream=NULL;      
 	char buff[100];
+	char comd[100] = "ssh gpdba@";
 	float load_max = 4.0; //每个节点的最大负载
 	int row_max = 12; //每个segment的最大记录条数
 	float arg_load, arg_time;
 	int imp = 100; //影响因子
 
+	//合成命令
+	strcat(comd,dict[segid]);
+	strcat(comd," uptime");
+	printf("the cpu command is: %s\n",comd);
 	//得到每个segment的CPU负载，uptime
 	memset(buff,0,sizeof(buff));
-	if((fstream=popen("uptime","r")) == NULL){
+	if((fstream=popen(comd,"r")) == NULL){
 		fprintf(stderr,"execute command failed: %s",strerror(errno));
 		return -1;
 	}
@@ -286,15 +291,20 @@ int cost_cpu(int segid, int row_size){
 int cost_io(int segid, int flag,int row_size){
 	FILE *fstream=NULL;
 	char buff[100];
+	char comd[100] = "ssh gpdba@"; //存储命令
 	float arg_load, arg_time=0.0;
 	float writeMB = 50; //平均写速率MB/s
 	float readMB = 200; //平均读速率MB/s
 	float row_bytes = 32; //每条记录的大小，KB
 	int imp = 100; //影响因子
 
+	//合成命令
+	strcat(comd,dict[segid]);
+	strcat(comd," iostat -x");
+	printf("the io command is: %s\n",comd);
 	//得到每个segment的I/O负载，iostat得到磁盘使用率
     memset(buff,0,sizeof(buff));
-    if((fstream=popen("iostat -x","r")) == NULL){
+    if((fstream=popen(comd,"r")) == NULL){
         fprintf(stderr,"execute command failed: %s",strerror(errno));
         return -1;
     }
@@ -338,11 +348,16 @@ int cost_net(int from_segid, int to_segid, int row_size){
 
 	FILE *fstream=NULL;
 	char buff[100];
+	char comd[100] = "ssh gpdba@"; //存储命令
 	float arg_load, arg_time;
 	float row_bytes = 32; //每条记录的大小，KB
 	float tranMB = 60; //网络传输速率，MB/s
 	int imp=100; //影响因子
 
+	//合成命令
+	strcat(comd,dict[from_segid]);
+	strcat(comd," netstat");
+	printf("the net command is: %s\n",comd);
 	//网络负载，netstat
 	memset(buff,0,sizeof(buff));
     if((fstream=popen("netstat","r")) == NULL){
@@ -401,7 +416,9 @@ int cost_sum(int from_segid, int to_segs[], int row_num, int row_size){
 int cost_wait(int segid){
 	FILE *fstream=NULL;
 	char buff[100]; //每一行输出的字符数
+	char comd[100] = "PGOPTIONS='-c gp_session_role=utility' psql -d testDB -f cost_wait.sql -p "; //存储命令
 	int sec, minu, hour, tm=0;
+
 	/*
 	char *sql = {"psql -d testDB -c ' \
 	SELECT now()-START AS lap FROM \
@@ -422,7 +439,22 @@ int cost_wait(int segid){
     left join pg_resqueue t3 on t2.rolresqueue=t3.oid \
     ORDER BY lap DESC;' -xt"};
 	*/
+	//合成命令
+	char port[10];
+	if(segid%4 == 0){
+		strcpy(port,"40000");
+	}else if(segid%4 == 1){
+		strcpy(port,"40001");
+	}else if(segid%4 == 2){
+		strcpy(port,"40002");
+	}else{
+		strcpy(port,"40003");
+	}
+	strcat(comd, port);
+	strcat(comd," -h ");
+	strcat(comd, dict[segid]);
 	char *sql = {"psql -d testDB -f cost_wait.sql -xt"};
+	printf("the wait cost command is: %s\n",comd);
 	//printf("the query string is: %s\n",sql);
 	//分析每个segment的执行日志，判断任务的平均等待时间
 	memset(buff,0,sizeof(buff));
@@ -458,9 +490,7 @@ int main(){
 	cost_io(1,1,2);
 	cost_net(1,2,2);
 
-	cost_wait(1);
-
-	printf("%s\n",dict[1]);
+	cost_wait(9);
 
     return 0;
 }
