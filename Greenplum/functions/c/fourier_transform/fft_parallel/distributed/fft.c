@@ -166,6 +166,7 @@ void recvOrigData(){
  * @return [description]
  */
 int read_data(){
+	/*
 	//从数据库表中读取数据
 	char *command="select val from test2 order by id";
 	int ret;
@@ -213,6 +214,7 @@ int read_data(){
 	 print_ereport(p,variableNum);
 
 	SPI_finish();
+	*/
 
 	return 0;
 }
@@ -349,7 +351,6 @@ fft(PG_FUNCTION_ARGS){
 	// wLength s的长度
 	
 	ereport(INFO,(errmsg("partial results, process %d.",rank)));
-	myprint_ereport(s,wLength);
 
 	if(rank>0){
 		MPI_Send(s+startPos,everageLength*2,MPI_DOUBLE,0,S_TAG,MPI_COMM_WORLD);
@@ -371,7 +372,6 @@ fft(PG_FUNCTION_ARGS){
 		}
 
 		ereport(INFO,(errmsg("The final results :")));
-		printres_ereport(s,wLength);
 
 		addTransTime(MPI_Wtime()-tempTime);
 	}
