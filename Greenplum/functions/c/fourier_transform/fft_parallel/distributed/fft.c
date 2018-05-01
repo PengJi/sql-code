@@ -14,8 +14,7 @@ PG_MODULE_MAGIC;
  * @param c1     [description]
  * @param c2     [description]
  */
-void comp_add(complex_t* result,const complex_t* c1,const complex_t* c2)
-{
+void comp_add(complex_t* result,const complex_t* c1,const complex_t* c2){
     result->r=c1->r+c2->r;
     result->i=c1->i+c2->i;
 }
@@ -26,8 +25,7 @@ void comp_add(complex_t* result,const complex_t* c1,const complex_t* c2)
  * @param c1     [description]
  * @param c2     [description]
  */
-void comp_multiply(complex_t* result,const complex_t* c1,const complex_t* c2)
-{
+void comp_multiply(complex_t* result,const complex_t* c1,const complex_t* c2){
     result->r=c1->r*c2->r-c1->i*c2->i;
     result->i=c1->r*c2->i+c2->r*c1->i;
 }
@@ -41,24 +39,20 @@ void comp_multiply(complex_t* result,const complex_t* c1,const complex_t* c2)
  * @param beginPos 第一个下标
  * @param endPos   最后一个下标
  */
-void shuffle(complex_t* f, int beginPos, int endPos)
-{
+void shuffle(complex_t* f, int beginPos, int endPos){
     int i;
     complex_t temp[2*MAX_N];
 
-    for(i = beginPos; i <= endPos; i ++)
-    {
+    for(i = beginPos; i <= endPos; i ++){
         temp[i] = f[i];
     }
 
     int j = beginPos;
-    for(i = beginPos; i <= endPos; i +=2)
-    {
+    for(i = beginPos; i <= endPos; i +=2){
         f[j] = temp[i];
         j++;
     }
-    for(i = beginPos +1; i <= endPos; i += 2)
-    {
+    for(i = beginPos +1; i <= endPos; i += 2){
         f[j] = temp[i];
         j++;
     }
@@ -76,40 +70,32 @@ void shuffle(complex_t* f, int beginPos, int endPos)
  * @param rightPos    所负责计算输出的y的片断的终止下标
  * @param totalLength y的长度
  */
-void evaluate(complex_t* f, int beginPos, int endPos,const complex_t* x, complex_t* y,
-int leftPos, int rightPos, int totalLength)
-{
+void evaluate(complex_t* f, int beginPos, int endPos,const complex_t* x, complex_t* y, 
+	int leftPos, int rightPos, int totalLength){
     int i;
-    if ((beginPos > endPos)||(leftPos > rightPos))
-    {
+    if ((beginPos > endPos)||(leftPos > rightPos)){
         printf("Error in use Polynomial!\n");
         exit(-1);
     }
-    else if(beginPos == endPos)
-    {
-        for(i = leftPos; i <= rightPos; i ++)
-        {
+    else if(beginPos == endPos){
+        for(i = leftPos; i <= rightPos; i ++){
             y[i] = f[beginPos];
         }
     }
-    else if(beginPos + 1 == endPos)
-    {
-        for(i = leftPos; i <= rightPos; i ++)
-        {
+    else if(beginPos + 1 == endPos){
+        for(i = leftPos; i <= rightPos; i ++){
             complex_t temp;
             comp_multiply(&temp, &f[endPos], &x[i]);
             comp_add(&y[i], &f[beginPos], &temp);
         }
     }
-    else
-    {
+    else{
         complex_t tempX[2*MAX_N],tempY1[2*MAX_N], tempY2[2*MAX_N];
         int midPos = (beginPos + endPos)/2;
 
         shuffle(f, beginPos, endPos);
 
-        for(i = leftPos; i <= rightPos; i ++)
-        {
+        for(i = leftPos; i <= rightPos; i ++){
             comp_multiply(&tempX[i], &x[i], &x[i]);
         }
 
@@ -118,8 +104,7 @@ int leftPos, int rightPos, int totalLength)
         evaluate(f, midPos+1, endPos, tempX, tempY2,
             leftPos, rightPos, totalLength);
 
-        for(i = leftPos; i <= rightPos; i ++)
-        {
+        for(i = leftPos; i <= rightPos; i ++){
             complex_t temp;
             comp_multiply(&temp, &x[i], &tempY2[i]);
             comp_add(&y[i], &tempY1[i], &temp);
@@ -132,12 +117,10 @@ int leftPos, int rightPos, int totalLength)
  * @param f       f为待打印数组的首地址
  * @param fLength fLength为数组的长度
  */
-void print_res(const complex_t* f,int fLength)
-{
+void print_res(const complex_t* f,int fLength){
 	int i;
 
-	for(i=0;i<fLength;i+=2)
-	{		
+	for(i=0;i<fLength;i+=2){		
 		if(f[i].i<0)
 			ereport(INFO,(errmsg("%f-%fi\n",f[i].r,-f[i].i)));
 		else
@@ -149,8 +132,7 @@ void print_res(const complex_t* f,int fLength)
  * 添加运行时间
  * @param toAdd 运行时间
  */
-void addTransTime(double toAdd)
-{
+void addTransTime(double toAdd){
 	transTime+=toAdd;
 }
 
@@ -158,12 +140,10 @@ void addTransTime(double toAdd)
  * 把原始数据发送给其它进程
  * @param size 集群中进程的数目
  */
-void sendOrigData(int size)
-{
+void sendOrigData(int size){
 	int i;
 
-	for(i=1;i<size;i++)
-	{
+	for(i=1;i<size;i++){
 		//向所有进程发送数据的总个数
 		MPI_Send(&variableNum,1,MPI_INT,i,V_TAG,MPI_COMM_WORLD);
 		//向所有进程发送数据
@@ -174,8 +154,7 @@ void sendOrigData(int size)
 /**
  * 接受原始数据，从进程0接收消息
  */
-void recvOrigData()
-{
+void recvOrigData(){
 	//从进程0接收数据的总个数
 	MPI_Recv(&variableNum,1,MPI_INT,0,V_TAG,MPI_COMM_WORLD,&status);
 	//从进程0接收所有的数据
