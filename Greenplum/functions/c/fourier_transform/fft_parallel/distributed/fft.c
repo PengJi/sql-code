@@ -175,6 +175,78 @@ int read_data(){
 	//command = text_to_cstring(PG_GETARG_TEXT_P(0));
 
     SPI_connect();
+	ret = SPI_exec(command, MAX_LINE);
+	variableNum=SPI_processed;
+	proc = SPI_processed;
+
+	if((variableNum<1)||(variableNum>MAX_N)){
+		ereport(INFO,(errmsg("variableNum out of range!")));
+		return(FALSE);
+	}
+	ereport(INFO,(errmsg("variableNum=%d",variableNum)));
+
+	if (ret > 0 && SPI_tuptable != NULL){
+		TupleDesc tupdesc = SPI_tuptable->tupdesc;
+		SPITupleTable *tuptable = SPI_tuptable;
+		char buf[10];
+		uint64 j;
+
+		for (j = 0; j < proc; j++){ //proc为表的行数
+			HeapTuple tuple = tuptable->vals[j];
+
+	        for (i = 1, buf[0] = 0; i <= tupdesc->natts; i++){
+	        	snprintf(buf + strlen (buf), sizeof(buf) - strlen(buf), " %s%s", 
+	        		SPI_getvalue(tuple, tupdesc, i), (i == tupdesc->natts) ? " " : " |");
+	        }
+
+		ereport(INFO,(errmsg("ROW: %s",buf))); //输出一行数据
+		sscanf(buf,"%f",&r);
+
+				//准备数据
+		p[j].r = r;
+		p[j].i = 0.0f;
+		}
+	}
+
+	// 打印原始数组
+	 ereport(INFO,(errmsg("p(t)=")));
+	 print_ereport(p,variableNum);
+
+	SPI_finish();
+	
+	return 0;
+}
+
+/**
+ * fft主函数
+ */
+PG_FUNCTION_INFO_V1(fft);
+Datum 
+fft(PG_FUNCTION_ARGS){
+	int rank,size,i;
+	int32 arg = PG_GETARG_INT32(0);
+
+	MPI_Init(NULL,NULL);
+	MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+	MPI_Comm_size(MPI_COMM_WORLD,&size);
+
+	// 初始进程
+	if(rank==0)
+	{
+		// 0# 进程从文件读入多项式p的阶数和系数序列
+		// if(!readFromDB(MAX_LINE))
+		// 	exit(-1);
+		
+		/*
+		//从数据库表中读取数据
+		char *command="select val from test order by id";
+	    int ret;
+	    uint64 proc;
+	    float r;
+
+	    //command = text_to_cstring(PG_GETARG_TEXT_P(0));
+
+	    SPI_connect();
 	    ret = SPI_exec(command, MAX_LINE);
 	    variableNum=SPI_processed;
 	    proc = SPI_processed;
@@ -215,15 +287,34 @@ int read_data(){
 		// print_ereport(p,variableNum);
 
 		SPI_finish();
-	return 0;
-}
+		*/
 
-/**
- * fft主函数
- */
-PG_FUNCTION_INFO_V1(fft);
-Datum 
-fft(PG_FUNCTION_ARGS){
+		//测试数据
+		variableNum=4;
+		p[0].r = 1.0; p[0].i = 0.0;
+		p[1].r = 2.0; p[1].i = 0.0;
+		p[2].r = 4.0; p[2].i = 0.0;
+		p[3].r = 3.0; p[3].i = 0.0;
+
+		// 进程数目太多，造成每个进程平均分配不到一个元素，异常退出
+		if(size>2*variableNum)
+		{
+			ereport(INFO,(errmsg("Too many Processors,reduce your -np value")));
+			MPI_Abort(MPI_COMM_WORLD,1);
+		}
+
+		beginTime=MPI_Wtime();
+
+		// 0#进程把多项式的阶数,p发送给其它进程
+		sendOrigData(size);
+
+		// 累计传输时间
+		addTransTime(MPI_Wtime()-beginTime);
+
+	}else{ // 其它进程接收进程0发送来的数据，包括variableNum、数组p
+		recvOrigData();
+	}
+
 	// 1.初始化旋转因子
 	int wLength=2*variableNum;
 	for(i=0;i<wLength;i++)
