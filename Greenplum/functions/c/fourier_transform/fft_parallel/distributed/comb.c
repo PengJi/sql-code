@@ -101,9 +101,7 @@ void combination(int ori[], int res[], int n, int m, int k, int index){
 			//printf("%d ", res[i]);
 			result[c][i] = res[i];
 		}
-		
 		c++;
-
         return;
     }
 
@@ -478,9 +476,50 @@ int cost_wait(int segid){
 /**
  * 迁移数据
  * @param  segid [description]
- * @return       [description]
+ * @return       -1 执行失败；
  */
-int move_row(int segid){
+int move_row(int from_segid, int to_segid, int row_id){
+	FILE *fstream=NULL;
+	char buff[100]; //每一行输出的字符数
+	char comd[100] = "PGOPTIONS='-c gp_session_role=utility' psql -d testDB -c -p -h";
+	char port[10];
+
+	//在segment上删除数据
+	//合成命令
+	if(from_segid%4 == 0){
+		strcpy(port,"40000");
+	}else if(from_segid%4 == 1){
+		strcpy(port,"40001");
+	}else if(from_segid%4 == 2){
+		strcpy(port,"40002");
+	}else{
+		strcpy(port,"40003");
+	}
+	strcat(comd, " -p ");
+	strcat(comd, " -h ");
+	strcat(comd, dict[from_segid]);
+	strcat(comd, " -c delete from test2 where id=");
+	sscanf(row_id, "%s")
+	strcat(comd, );
+	memset(buff,0,sizeof(buff));
+	if((fstream=popen(sql,"r")) == NULL){
+		fprintf(stderr,"execute command failed: %s",strerror(errno));
+		return -1;
+	}
+	fgets(buff, sizeof(buff), fstream);
+	
+	//在segment上添加数据
+	//合成命令
+	if(to_segid%4 == 0){
+		strcpy(port,"40000");
+	}else if(to_segid%4 == 1){
+		strcpy(port,"40001");
+	}else if(to_segid%4 == 2){
+		strcpy(port,"40002");
+	}else{
+		strcpy(port,"40003");
+	}
+	
 	return 0;
 }
 
