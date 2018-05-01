@@ -394,6 +394,18 @@ fft(PG_FUNCTION_ARGS){
 }
 
 /**
+ * 主节点上执行fft
+ */
+PG_FUNCTION_INFO_V1(fft_main);
+Datum 
+fft_main(PG_FUNCTION_ARGS){
+	// 先保存从节点上的所有数据，然后再计算
+	int32 arg = PG_GETARG_INT32(0);
+
+    PG_RETURN_NULL();
+}
+
+/**
  * 从节点上执行fft
  */
 PG_FUNCTION_INFO_V1(fft_exec);
