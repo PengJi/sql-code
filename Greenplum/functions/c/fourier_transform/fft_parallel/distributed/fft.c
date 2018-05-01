@@ -166,9 +166,8 @@ void recvOrigData(){
  * @return [description]
  */
 int read_data(){
-	/*
 	//从数据库表中读取数据
-	char *command="select val from test order by id";
+	char *command="select val from test2 order by id";
 	int ret;
 	uint64 proc;
 	float r;
@@ -216,7 +215,6 @@ int read_data(){
 		// print_ereport(p,variableNum);
 
 		SPI_finish();
-		*/
 	return 0;
 }
 
@@ -227,17 +225,14 @@ PG_FUNCTION_INFO_V1(fft);
 Datum 
 fft(PG_FUNCTION_ARGS){
 	// 1.初始化旋转因子
-	/*
 	int wLength=2*variableNum;
 	for(i=0;i<wLength;i++)
 	{
 		w[i].r=cos(i*2*PI/wLength);
 		w[i].i=sin(i*2*PI/wLength);
 	}
-	*/
 	
 	// 2.各从节点计算部分傅里叶变换
-	/*
 	// 对p作FFT，输出序列为s，每个进程仅负责计算出序列中位置为 startPos 到 stopPos 的元素
 	evaluate(p,0,variableNum-1,w,s,startPos,stopPos,wLength);
 	// p 原始序列
@@ -248,10 +243,8 @@ fft(PG_FUNCTION_ARGS){
 	// startPos 所负责计算输出的y的片断的起始下标
 	// stopPos 所负责计算输出的y的片断的终止下标
 	// wLength s的长度
-	*/
 	
 	// 3.将各部分的计算结果汇总
-	/*
 	//其他进程都将 s 中自己负责计算出来的部分发送给进程0，并从进程0接收汇总的s
 	MPI_Send(s+startPos,everageLength*2,MPI_DOUBLE,0,S_TAG,MPI_COMM_WORLD);
 	MPI_Recv(s,wLength*2,MPI_DOUBLE,0,S_TAG2,MPI_COMM_WORLD,&status);
@@ -267,7 +260,6 @@ fft(PG_FUNCTION_ARGS){
 	{
 		MPI_Send(s,wLength*2,MPI_DOUBLE,i,S_TAG2,MPI_COMM_WORLD);
 	}
-	 */
 	
 	//PG_RETURN_INT32(res);
     PG_RETURN_NULL();
@@ -282,12 +274,6 @@ fft_exec(PG_FUNCTION_ARGS){
 	// 先保存从节点上的所有数据，然后再计算
 	int32 arg = PG_GETARG_INT32(0);
 
-	char *command="select addab(n1,n2) from tb order by id";
-	SPI_connect();
-	SPI_exec(command, MAX_LINE);
-	SPI_finish();
-
-    //PG_RETURN_INT32(res);
     PG_RETURN_NULL();
 }
 
