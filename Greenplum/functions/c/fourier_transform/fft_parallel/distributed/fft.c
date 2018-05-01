@@ -213,7 +213,7 @@ int read_data(){
 	 print_ereport(p,variableNum);
 
 	SPI_finish();
-	
+
 	return 0;
 }
 
@@ -322,6 +322,19 @@ fft(PG_FUNCTION_ARGS){
 		w[i].r=cos(i*2*PI/wLength);
 		w[i].i=sin(i*2*PI/wLength);
 	}
+
+	// 划分各个进程的工作范围 startPos ~ stopPos
+	int everageLength=wLength/size; // 8/4=2(假设有四个进程)
+	int moreLength=wLength%size; // 8%4=0
+	int startPos=moreLength+rank*everageLength; // 0+0*2=0; 0+1*2=1; 0+2*2=4; 0+3*2=6
+	int stopPos=startPos+everageLength-1; // 0+2-1=1; 1+2-1=2; 4+2-1=5; 6+2-1=7
+	//片段: [0,1], [1,2], [4,5], [6,7]
+
+	if(rank==0)
+	{
+		startPos=0;
+		stopPos=moreLength+everageLength-1;
+	}
 	
 	// 2.各从节点计算部分傅里叶变换
 	// 对p作FFT，输出序列为s，每个进程仅负责计算出序列中位置为 startPos 到 stopPos 的元素
@@ -335,22 +348,46 @@ fft(PG_FUNCTION_ARGS){
 	// stopPos 所负责计算输出的y的片断的终止下标
 	// wLength s的长度
 	
-	// 3.将各部分的计算结果汇总
-	//其他进程都将 s 中自己负责计算出来的部分发送给进程0，并从进程0接收汇总的s
-	MPI_Send(s+startPos,everageLength*2,MPI_DOUBLE,0,S_TAG,MPI_COMM_WORLD);
-	MPI_Recv(s,wLength*2,MPI_DOUBLE,0,S_TAG2,MPI_COMM_WORLD,&status);
+	ereport(INFO,(errmsg("partial results, process %d.",rank)));
+	myprint_ereport(s,wLength);
 
-	// 进程0接收s片段
-	for(i=1;i<size;i++)
-	{
-		MPI_Recv(s+moreLength+i*everageLength,everageLength*2,MPI_DOUBLE,i,S_TAG,MPI_COMM_WORLD,&status);
+	if(rank>0){
+		MPI_Send(s+startPos,everageLength*2,MPI_DOUBLE,0,S_TAG,MPI_COMM_WORLD);
+		MPI_Recv(s,wLength*2,MPI_DOUBLE,0,S_TAG2,MPI_COMM_WORLD,&status);
+	}
+	else{ // 进程0接收s片段，向其余进程发送完整的s
+		double tempTime=MPI_Wtime();
+
+		// 进程0接收s片段
+		for(i=1;i<size;i++)
+		{
+			MPI_Recv(s+moreLength+i*everageLength,everageLength*2,MPI_DOUBLE,i,S_TAG,MPI_COMM_WORLD,&status);
+		}
+
+		//向其余进程发送完整的结果s
+		for(i=1;i<size;i++)
+		{
+			MPI_Send(s,wLength*2,MPI_DOUBLE,i,S_TAG2,MPI_COMM_WORLD);
+		}
+
+		ereport(INFO,(errmsg("The final results :")));
+		printres_ereport(s,wLength);
+
+		addTransTime(MPI_Wtime()-tempTime);
 	}
 
-	// 进程0向其余进程发送完整的结果s	
-	for(i=1;i<size;i++)
+	if(rank==0)
 	{
-		MPI_Send(s,wLength*2,MPI_DOUBLE,i,S_TAG2,MPI_COMM_WORLD);
+		totalTime=MPI_Wtime();
+		totalTime-=beginTime;
+
+		ereport(INFO,(errmsg("Use prossor size=%d",size)));
+		ereport(INFO,(errmsg("Total running time=%f(s)",totalTime)));
+		ereport(INFO,(errmsg("Distribute data time = %f(s)",transTime)));
+		ereport(INFO,(errmsg("Parallel compute time = %f(s) ",totalTime-transTime)));
 	}
+
+	MPI_Finalize();
 	
 	//PG_RETURN_INT32(res);
     PG_RETURN_NULL();
