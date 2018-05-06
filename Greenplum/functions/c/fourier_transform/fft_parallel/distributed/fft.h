@@ -1,6 +1,10 @@
 #ifndef __FFT_H__
 #define __FFT_H__
 
+#include "postgres.h"
+#include "funcapi.h"
+#include "cdb/cdbvars.h"
+
 #define MAX_N 4096
 #define PI 3.1415926535897932
 #define EPS 10E-8

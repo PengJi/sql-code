@@ -1,12 +1,18 @@
-CXXFLAGS = -I/home/gpdba/greenplum/include/postgresql/server
+CC = gcc
+CFLAGS = -g -Wall -I/home/gpdba/greenplum/include/postgresql/server
 LDFLAGS = -lm
 SRC_FFT = fft.c
+OBJ_FFT = $(patsubst %c, %o, $(SRC_FFT))
+BIN_FFT = fft
+LIB_FFT = fft.so
 
-#all:test.fft
+all : $(LIB_FFT)
 
-fft.so:$(SRC_FFT)
-	gcc $(CXXFLAGS) -fpic -c $^
-	gcc $(LDFLAGS) -shared -o $@ *.o
+$(OBJ_FFT) : $(SRC_FFT)
+	$(CC) $(CFLAGS) -fpic -c $^ -o $@
+
+$(LIB_FFT) : $(OBJ_FFT)
+	$(CC) $(LDFLAGS) -shared -o $@ $^
 
 .PHONY: clean
 clean :
