@@ -1,21 +1,14 @@
-CFLAGS = -g -Wall -Dfft -I/home/gpdba/greenplum/include/postgresql/server -fpic -std=c99
+CXXFLAGS = -I/home/gpdba/greenplum/include/postgresql/server
 LDFLAGS = -lm
+SRC_FFT = fft.c
 
-FFT_SRC = fft.c comb.c
-#编译所有c文件
-#FFT_SRC = $(wildcard *.c source/*.c) 
-FFT_OBJ = $(patsubst %c, %o, $(FFT_SRC))
-TARGET = fft
+#all:test.fft
 
-.PHONY:all clean 
+fft.so:$(SRC_FFT)
+	gcc $(CXXFLAGS) -fpic -c $^
+	gcc $(LDFLAGS) -shared -o $@ *.o
 
-all:$(TARGET)
-
-$(TARGET):$(FFT_OBJ)
-	gcc $(LDFLAGS) -o $@
-
-%.o: %.c
-	gcc $(CFLAGS) -c $< -o $@
-
+.PHONY: clean
 clean :
-	rm -f *.o *.so $(TARGET)
+	rm -f *.o *.so
+
