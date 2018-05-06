@@ -222,9 +222,9 @@ int read_data(){
 /**
  * fft主函数
  */
-PG_FUNCTION_INFO_V1(fft);
+PG_FUNCTION_INFO_V1(fft_test);
 Datum 
-fft(PG_FUNCTION_ARGS){
+fft_test(PG_FUNCTION_ARGS){
 	int rank,size,i;
 	int32 arg = PG_GETARG_INT32(0);
 
@@ -378,6 +378,117 @@ fft(PG_FUNCTION_ARGS){
 
 	if(rank==0)
 	{
+		totalTime=MPI_Wtime();
+		totalTime-=beginTime;
+
+		ereport(INFO,(errmsg("Use prossor size=%d",size)));
+		ereport(INFO,(errmsg("Total running time=%f(s)",totalTime)));
+		ereport(INFO,(errmsg("Distribute data time = %f(s)",transTime)));
+		ereport(INFO,(errmsg("Parallel compute time = %f(s) ",totalTime-transTime)));
+	}
+
+	MPI_Finalize();
+	
+	//PG_RETURN_INT32(res);
+    PG_RETURN_NULL();
+}
+
+/**
+ * fft主函数
+ */
+PG_FUNCTION_INFO_V1(fft);
+Datum 
+fft(PG_FUNCTION_ARGS){
+	int rank,size,i;
+	int32 arg = PG_GETARG_INT32(0);
+
+	MPI_Init(NULL,NULL);
+	MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+	MPI_Comm_size(MPI_COMM_WORLD,&size);
+
+	//初始进程
+	if(rank==0){
+		//初始化数据
+		variableNum=4;
+		p[0].r = 1.0; p[0].i = 0.0;
+		p[1].r = 2.0; p[1].i = 0.0;
+		p[2].r = 4.0; p[2].i = 0.0;
+		p[3].r = 3.0; p[3].i = 0.0;
+
+		//进程数目太多，造成每个进程平均分配不到一个元素，异常退出
+		if(size>2*variableNum){
+			ereport(INFO,(errmsg("Too many Processors,reduce your -np value")));
+			MPI_Abort(MPI_COMM_WORLD,1);
+		}
+
+		beginTime=MPI_Wtime();
+
+		//0#进程把多项式的阶数,p发送给其它进程
+		sendOrigData(size);
+
+		//累计传输时间
+		addTransTime(MPI_Wtime()-beginTime);
+
+	}else{ //其它进程接收进程0发送来的数据，包括variableNum、数组p
+		recvOrigData();
+	}
+
+	// 1.初始化旋转因子
+	int wLength=2*variableNum;
+	for(i=0;i<wLength;i++){
+		w[i].r=cos(i*2*PI/wLength);
+		w[i].i=sin(i*2*PI/wLength);
+	}
+
+	// 划分各个进程的工作范围 startPos ~ stopPos
+	int everageLength=wLength/size; // 8/4=2(假设有四个进程)
+	int moreLength=wLength%size; // 8%4=0
+	int startPos=moreLength+rank*everageLength; // 0+0*2=0; 0+1*2=1; 0+2*2=4; 0+3*2=6
+	int stopPos=startPos+everageLength-1; // 0+2-1=1; 1+2-1=2; 4+2-1=5; 6+2-1=7
+	//片段: [0,1], [1,2], [4,5], [6,7]
+
+	if(rank==0){
+		startPos=0;
+		stopPos=moreLength+everageLength-1;
+	}
+	
+	// 2.各从节点计算部分傅里叶变换
+	// 对p作FFT，输出序列为s，每个进程仅负责计算出序列中位置为 startPos 到 stopPos 的元素
+	evaluate(p,0,variableNum-1,w,s,startPos,stopPos,wLength);
+	// p 原始序列
+	// 0 原始序列在数组f中的第一个下标
+	// variableNum-1 原始序列在数组f中的最后一个下标
+	// w 存放单位根的数组，其元素为w,w^2,w^3...
+	// s 输出序列
+	// startPos 所负责计算输出的y的片断的起始下标
+	// stopPos 所负责计算输出的y的片断的终止下标
+	// wLength s的长度
+	
+	ereport(INFO,(errmsg("partial results, process %d.",rank)));
+
+	if(rank>0){
+		MPI_Send(s+startPos,everageLength*2,MPI_DOUBLE,0,S_TAG,MPI_COMM_WORLD);
+		MPI_Recv(s,wLength*2,MPI_DOUBLE,0,S_TAG2,MPI_COMM_WORLD,&status);
+	}
+	else{ // 进程0接收s片段，向其余进程发送完整的s
+		double tempTime=MPI_Wtime();
+
+		// 进程0接收s片段
+		for(i=1;i<size;i++){
+			MPI_Recv(s+moreLength+i*everageLength,everageLength*2,MPI_DOUBLE,i,S_TAG,MPI_COMM_WORLD,&status);
+		}
+
+		//向其余进程发送完整的结果s
+		for(i=1;i<size;i++){
+			MPI_Send(s,wLength*2,MPI_DOUBLE,i,S_TAG2,MPI_COMM_WORLD);
+		}
+
+		ereport(INFO,(errmsg("The final results :")));
+
+		addTransTime(MPI_Wtime()-tempTime);
+	}
+
+	if(rank==0){
 		totalTime=MPI_Wtime();
 		totalTime-=beginTime;
 

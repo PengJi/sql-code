@@ -499,10 +499,10 @@ int move_row(int from_segid, int to_segid, int row_id){
 	strcat(comd, " -h ");
 	strcat(comd, dict[from_segid]);
 	strcat(comd, " -c delete from test2 where id=");
-	sscanf(row_id, "%s")
+	sscanf(row_id, "%s");
 	strcat(comd, );
 	memset(buff,0,sizeof(buff));
-	if((fstream=popen(sql,"r")) == NULL){
+	if((fstream=popen(comd,"r")) == NULL){
 		fprintf(stderr,"execute command failed: %s",strerror(errno));
 		return -1;
 	}
