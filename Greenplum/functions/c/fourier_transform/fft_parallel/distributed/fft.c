@@ -145,9 +145,9 @@ void sendOrigData(int size){
 
 	for(i=1;i<size;i++){
 		//向所有进程发送数据的总个数
-		MPI_Send(&variableNum,1,MPI_INT,i,V_TAG,MPI_COMM_WORLD);
+		// MPI_Send(&variableNum,1,MPI_INT,i,V_TAG,MPI_COMM_WORLD);
 		//向所有进程发送数据
-		MPI_Send(p, variableNum * 2, MPI_DOUBLE, i, P_TAG, MPI_COMM_WORLD);
+		// MPI_Send(p, variableNum * 2, MPI_DOUBLE, i, P_TAG, MPI_COMM_WORLD);
 	}
 }
 
@@ -156,9 +156,9 @@ void sendOrigData(int size){
  */
 void recvOrigData(){
 	//从进程0接收数据的总个数
-	MPI_Recv(&variableNum,1,MPI_INT,0,V_TAG,MPI_COMM_WORLD,&status);
+	// MPI_Recv(&variableNum,1,MPI_INT,0,V_TAG,MPI_COMM_WORLD,&status);
 	//从进程0接收所有的数据
-	MPI_Recv(p, variableNum * 2, MPI_DOUBLE, 0, P_TAG, MPI_COMM_WORLD, &status);
+	// MPI_Recv(p, variableNum * 2, MPI_DOUBLE, 0, P_TAG, MPI_COMM_WORLD, &status);
 }
 
 /**
@@ -222,189 +222,15 @@ int read_data(){
 /**
  * fft主函数
  */
-PG_FUNCTION_INFO_V1(fft_test);
-Datum 
-fft_test(PG_FUNCTION_ARGS){
-	int rank,size,i;
-	int32 arg = PG_GETARG_INT32(0);
-
-	MPI_Init(NULL,NULL);
-	MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-	MPI_Comm_size(MPI_COMM_WORLD,&size);
-
-	// 初始进程
-	if(rank==0)
-	{
-		// 0# 进程从文件读入多项式p的阶数和系数序列
-		// if(!readFromDB(MAX_LINE))
-		// 	exit(-1);
-		
-		/*
-		//从数据库表中读取数据
-		char *command="select val from test order by id";
-	    int ret;
-	    uint64 proc;
-	    float r;
-
-	    //command = text_to_cstring(PG_GETARG_TEXT_P(0));
-
-	    SPI_connect();
-	    ret = SPI_exec(command, MAX_LINE);
-	    variableNum=SPI_processed;
-	    proc = SPI_processed;
-
-		if((variableNum<1)||(variableNum>MAX_N))
-		{
-			ereport(INFO,(errmsg("variableNum out of range!")));
-			return(FALSE);
-		}
-		ereport(INFO,(errmsg("variableNum=%d",variableNum)));
-
-	    if (ret > 0 && SPI_tuptable != NULL){
-	        TupleDesc tupdesc = SPI_tuptable->tupdesc;
-	        SPITupleTable *tuptable = SPI_tuptable;
-	        char buf[10];
-	        uint64 j;
-
-	        for (j = 0; j < proc; j++) //proc为表的行数
-	        {
-	            HeapTuple tuple = tuptable->vals[j];
-
-	            for (i = 1, buf[0] = 0; i <= tupdesc->natts; i++){
-	                snprintf(buf + strlen (buf), sizeof(buf) - strlen(buf), " %s%s",
-	                        SPI_getvalue(tuple, tupdesc, i),
-	                        (i == tupdesc->natts) ? " " : " |");
-	            }
-
-	            ereport(INFO,(errmsg("ROW: %s",buf))); //输出一行数据
-	            sscanf(buf,"%f",&r);
-				//准备数据
-	            p[j].r = r;
-	            p[j].i = 0.0f;
-	        }
-	    }
-
-		// 打印原始数组
-		// ereport(INFO,(errmsg("p(t)=")));
-		// print_ereport(p,variableNum);
-
-		SPI_finish();
-		*/
-
-		//测试数据
-		variableNum=4;
-		p[0].r = 1.0; p[0].i = 0.0;
-		p[1].r = 2.0; p[1].i = 0.0;
-		p[2].r = 4.0; p[2].i = 0.0;
-		p[3].r = 3.0; p[3].i = 0.0;
-
-		// 进程数目太多，造成每个进程平均分配不到一个元素，异常退出
-		if(size>2*variableNum)
-		{
-			ereport(INFO,(errmsg("Too many Processors,reduce your -np value")));
-			MPI_Abort(MPI_COMM_WORLD,1);
-		}
-
-		beginTime=MPI_Wtime();
-
-		// 0#进程把多项式的阶数,p发送给其它进程
-		sendOrigData(size);
-
-		// 累计传输时间
-		addTransTime(MPI_Wtime()-beginTime);
-
-	}else{ // 其它进程接收进程0发送来的数据，包括variableNum、数组p
-		recvOrigData();
-	}
-
-	// 1.初始化旋转因子
-	int wLength=2*variableNum;
-	for(i=0;i<wLength;i++)
-	{
-		w[i].r=cos(i*2*PI/wLength);
-		w[i].i=sin(i*2*PI/wLength);
-	}
-
-	// 划分各个进程的工作范围 startPos ~ stopPos
-	int everageLength=wLength/size; // 8/4=2(假设有四个进程)
-	int moreLength=wLength%size; // 8%4=0
-	int startPos=moreLength+rank*everageLength; // 0+0*2=0; 0+1*2=1; 0+2*2=4; 0+3*2=6
-	int stopPos=startPos+everageLength-1; // 0+2-1=1; 1+2-1=2; 4+2-1=5; 6+2-1=7
-	//片段: [0,1], [1,2], [4,5], [6,7]
-
-	if(rank==0)
-	{
-		startPos=0;
-		stopPos=moreLength+everageLength-1;
-	}
-	
-	// 2.各从节点计算部分傅里叶变换
-	// 对p作FFT，输出序列为s，每个进程仅负责计算出序列中位置为 startPos 到 stopPos 的元素
-	evaluate(p,0,variableNum-1,w,s,startPos,stopPos,wLength);
-	// p 原始序列
-	// 0 原始序列在数组f中的第一个下标
-	// variableNum-1 原始序列在数组f中的最后一个下标
-	// w 存放单位根的数组，其元素为w,w^2,w^3...
-	// s 输出序列
-	// startPos 所负责计算输出的y的片断的起始下标
-	// stopPos 所负责计算输出的y的片断的终止下标
-	// wLength s的长度
-	
-	ereport(INFO,(errmsg("partial results, process %d.",rank)));
-
-	if(rank>0){
-		MPI_Send(s+startPos,everageLength*2,MPI_DOUBLE,0,S_TAG,MPI_COMM_WORLD);
-		MPI_Recv(s,wLength*2,MPI_DOUBLE,0,S_TAG2,MPI_COMM_WORLD,&status);
-	}
-	else{ // 进程0接收s片段，向其余进程发送完整的s
-		double tempTime=MPI_Wtime();
-
-		// 进程0接收s片段
-		for(i=1;i<size;i++)
-		{
-			MPI_Recv(s+moreLength+i*everageLength,everageLength*2,MPI_DOUBLE,i,S_TAG,MPI_COMM_WORLD,&status);
-		}
-
-		//向其余进程发送完整的结果s
-		for(i=1;i<size;i++)
-		{
-			MPI_Send(s,wLength*2,MPI_DOUBLE,i,S_TAG2,MPI_COMM_WORLD);
-		}
-
-		ereport(INFO,(errmsg("The final results :")));
-
-		addTransTime(MPI_Wtime()-tempTime);
-	}
-
-	if(rank==0)
-	{
-		totalTime=MPI_Wtime();
-		totalTime-=beginTime;
-
-		ereport(INFO,(errmsg("Use prossor size=%d",size)));
-		ereport(INFO,(errmsg("Total running time=%f(s)",totalTime)));
-		ereport(INFO,(errmsg("Distribute data time = %f(s)",transTime)));
-		ereport(INFO,(errmsg("Parallel compute time = %f(s) ",totalTime-transTime)));
-	}
-
-	MPI_Finalize();
-	
-	//PG_RETURN_INT32(res);
-    PG_RETURN_NULL();
-}
-
-/**
- * fft主函数
- */
 PG_FUNCTION_INFO_V1(fft);
 Datum 
 fft(PG_FUNCTION_ARGS){
 	int rank,size,i;
 	int32 arg = PG_GETARG_INT32(0);
 
-	MPI_Init(NULL,NULL);
-	MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-	MPI_Comm_size(MPI_COMM_WORLD,&size);
+	// MPI_Init(NULL,NULL);
+	// MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+	// MPI_Comm_size(MPI_COMM_WORLD,&size);
 
 	//初始进程
 	if(rank==0){
@@ -418,16 +244,16 @@ fft(PG_FUNCTION_ARGS){
 		//进程数目太多，造成每个进程平均分配不到一个元素，异常退出
 		if(size>2*variableNum){
 			ereport(INFO,(errmsg("Too many Processors,reduce your -np value")));
-			MPI_Abort(MPI_COMM_WORLD,1);
+			// MPI_Abort(MPI_COMM_WORLD,1);
 		}
 
-		beginTime=MPI_Wtime();
+		// beginTime=MPI_Wtime();
 
 		//0#进程把多项式的阶数,p发送给其它进程
 		sendOrigData(size);
 
 		//累计传输时间
-		addTransTime(MPI_Wtime()-beginTime);
+		// addTransTime(MPI_Wtime()-beginTime);
 
 	}else{ //其它进程接收进程0发送来的数据，包括variableNum、数组p
 		recvOrigData();
@@ -467,29 +293,29 @@ fft(PG_FUNCTION_ARGS){
 	ereport(INFO,(errmsg("partial results, process %d.",rank)));
 
 	if(rank>0){
-		MPI_Send(s+startPos,everageLength*2,MPI_DOUBLE,0,S_TAG,MPI_COMM_WORLD);
-		MPI_Recv(s,wLength*2,MPI_DOUBLE,0,S_TAG2,MPI_COMM_WORLD,&status);
+		// MPI_Send(s+startPos,everageLength*2,MPI_DOUBLE,0,S_TAG,MPI_COMM_WORLD);
+		// MPI_Recv(s,wLength*2,MPI_DOUBLE,0,S_TAG2,MPI_COMM_WORLD,&status);
 	}
 	else{ // 进程0接收s片段，向其余进程发送完整的s
-		double tempTime=MPI_Wtime();
+		// double tempTime=MPI_Wtime();
 
 		// 进程0接收s片段
 		for(i=1;i<size;i++){
-			MPI_Recv(s+moreLength+i*everageLength,everageLength*2,MPI_DOUBLE,i,S_TAG,MPI_COMM_WORLD,&status);
+			// MPI_Recv(s+moreLength+i*everageLength,everageLength*2,MPI_DOUBLE,i,S_TAG,MPI_COMM_WORLD,&status);
 		}
 
 		//向其余进程发送完整的结果s
 		for(i=1;i<size;i++){
-			MPI_Send(s,wLength*2,MPI_DOUBLE,i,S_TAG2,MPI_COMM_WORLD);
+			// MPI_Send(s,wLength*2,MPI_DOUBLE,i,S_TAG2,MPI_COMM_WORLD);
 		}
 
 		ereport(INFO,(errmsg("The final results :")));
 
-		addTransTime(MPI_Wtime()-tempTime);
+		// addTransTime(MPI_Wtime()-tempTime);
 	}
 
 	if(rank==0){
-		totalTime=MPI_Wtime();
+		// totalTime=MPI_Wtime();
 		totalTime-=beginTime;
 
 		ereport(INFO,(errmsg("Use prossor size=%d",size)));
@@ -498,7 +324,7 @@ fft(PG_FUNCTION_ARGS){
 		ereport(INFO,(errmsg("Parallel compute time = %f(s) ",totalTime-transTime)));
 	}
 
-	MPI_Finalize();
+	// MPI_Finalize();
 	
 	//PG_RETURN_INT32(res);
     PG_RETURN_NULL();
